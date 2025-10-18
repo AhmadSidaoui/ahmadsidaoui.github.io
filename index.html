@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>Ahmad Sidaoui – Data Scientist</title>
+  <title>Ahmad Sidaoui – Portfolio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <!-- Google fonts & icons -->
@@ -13,15 +14,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
+
 <body>
   <!-- --------------- HERO --------------- -->
   <section id="hero">
     <canvas id="particles"></canvas>
     <div class="hero-content">
       <h1 class="name">Ahmad Sidaoui</h1>
-      <p class="tagline">Data Scientist · Data Engineer · AI Master’s Candidate</p>
+      <p class="tagline">Data Scientist · Data Engineer · Data Visualization Expert</p>
       <div class="hero-links">
-        <a href="#work" class="btn primary">Explore Work</a>
+        <a href = "#powerbi" class = "btn primary">Dashboards</a>
+        <a href="#work" class="btn primary">Experience</a>
         <a href="Ahmad_Sidaoui_CV.pdf" download class="btn ghost">Download CV</a>
       </div>
     </div>
@@ -37,6 +40,26 @@
       <li><a href="#contact">Contact</a></li>
     </ul>
   </nav>
+
+  <!-- ===== Power BI DASHBOARD SECTION ===== -->
+  <section id="powerbi" class="glass">
+    <div class="container">
+      <h2>Live Dashboard</h2>
+      <p>Paste any Power BI link below and it will appear instantly.</p>
+
+      <!-- paste box + button -->
+      <div class="embed-control">
+        <input type="url" id="pbiUrl" placeholder="https://app.powerbi.com/...">
+        <button onclick="loadReport()">Load</button>
+      </div>
+
+      <!-- where the report shows up -->
+      <div class="report-box">
+        <iframe id="pbiFrame" src="" frameborder="0" allowFullScreen="true"></iframe>
+      </div>
+    </div>
+  </section>
+
 
   <!-- --------------- ABOUT --------------- -->
   <section id="about">

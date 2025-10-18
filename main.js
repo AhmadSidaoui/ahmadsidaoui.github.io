@@ -16,3 +16,20 @@ gsap.from('.project-tile',{opacity:0,scale:.8,stagger:.1,scrollTrigger:{trigger:
 
 // ---- footer year ----
 document.getElementById('year').textContent=new Date().getFullYear();
+
+
+
+// auto-load demo report (optional) on first visit
+window.addEventListener('DOMContentLoaded', () => {
+  const demo = "https://app.powerbi.com/view?r=eyJrIjoiZGU2NmM3ZTYtOGRhYy00OGE4LWE4NjgtNmUxYjYyYzYxMTliIiwidCI6IjczOTczYTQtODcwZi00YjJlLWI0NWQtNmU3ZWVlYzU0MjQ2IiwidCI6IjRhMDAwYzUwLWI5ZjQtNGM4Yi1iY2YxLTFiODkyY2E3MGIyNyJ9";
+  const frame = document.getElementById('pbiFrame');
+  const input = document.getElementById('pbiUrl');
+  input.value = demo;       // pre-fill demo link
+  frame.src = demo;         // show it immediately
+});
+
+function loadReport() {
+  const url = document.getElementById('pbiUrl').value.trim();
+  if (!url) { alert("Please paste a Power BI link."); return; }
+  document.getElementById('pbiFrame').src = url;
+}
