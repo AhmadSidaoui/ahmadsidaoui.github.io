@@ -81,7 +81,11 @@ footer{text-align:center;padding:2rem 0;font-size:.8rem;color:#586069;}
 }
 
 /* ----- Power-BI section ----- */
-#powerbi{ padding:4rem 0; }
+#powerbi{  padding:4rem 0;
+  background:rgba(30,36,50,.35);
+  backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06); }
 .embed-control{ display:flex; gap:1rem; margin-bottom:1.5rem; }
 .embed-control input{ flex:1; padding:.6rem 1rem; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.05); color:#fff; border-radius:8px; }
 .embed-control button{ padding:.6rem 1.5rem; background:#38bdf8; color:#0d1117; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
