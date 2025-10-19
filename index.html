@@ -13,6 +13,8 @@
   <!-- GSAP (animation) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 
 <body>
@@ -38,10 +40,11 @@
       <li><a href="#skills">Skills</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#contact">Contact</a></li>
+      <li><a href="#powerbi">Dashbaords</a></li>
     </ul>
   </nav>
 
-  <!-- ===== Power BI DASHBOARD SECTION ===== -->
+  <!-- --------------- Power BI DASHBOARD SECTION --------------- -->
   <section id="powerbi" class="glass">
     <div class="container">
       <h2>Live Dashboard</h2>
@@ -55,11 +58,21 @@
 
       <!-- where the report shows up -->
       <div class="report-box">
-        <iframe id="pbiFrame" src="" frameborder="0" allowFullScreen="true"></iframe>
+        <iframe id="pbiFrame" src="https://app.powerbi.com" frameborder="0" allowFullScreen="true"></iframe>
       </div>
     </div>
   </section>
 
+
+
+  <!-- ---------------  D3 CHARTS SECTION --------------- -->
+  <section>
+    <div class="chart-card">
+      <script  src="plot animation.js"></script>
+    </div>
+  </section>
+  
+  
 
   <!-- --------------- ABOUT --------------- -->
   <section id="about">
@@ -87,7 +100,7 @@
         <div class="item">
           <span class="date">2023 – 2024</span>
           <h3>Data Scientist – Datagration</h3>
-          <p>Built ESG recycling tracker; optimized pipelines → +15 % accuracy; landed Fortune-500 customers.</p>
+          <p>Built ESG recycling tracker; optimized pipelines → +15 % accuracy.</p>
         </div>
         <div class="item">
           <span class="date">2022 – 2023</span>

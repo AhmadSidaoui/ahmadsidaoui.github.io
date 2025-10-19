@@ -32,4 +32,6 @@ function loadReport() {
   const url = document.getElementById('pbiUrl').value.trim();
   if (!url) { alert("Please paste a Power BI link."); return; }
   document.getElementById('pbiFrame').src = url;
-}
+};
+
+

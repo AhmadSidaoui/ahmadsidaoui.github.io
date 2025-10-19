@@ -12,7 +12,25 @@ a{color:inherit;text-decoration:none;}
 img,video{max-width:100%;display:block;border-radius:12px;}
 
 /* ---------- CONTAINER ---------- */
-.container{width:90%;max-width:1100px;margin:auto;}
+/* 1. keep your existing wrapper styles */
+.container {
+  width: 90%;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.container_light {
+  margin: auto;
+  padding: 4rem 2rem;   /* 2rem left/right keeps text/SVG away from edges */
+  background: rgba(30, 36, 50, .35);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, .06);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  /* border-radius: 12px; */
+}
+
+
+
 
 /* ---------- NAVBAR ---------- */
 #navbar{
@@ -55,12 +73,12 @@ h2::after{content:'';position:absolute;left:0;bottom:-6px;height:3px;width:50%;b
 
 /* ---------- SKILLS ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;}
-.skill-card{background:rgba(30,36,50,.5);border:1px solid rgba(255,255,255,.08);padding:1rem;text-align:center;border-radius:12px;transition:.3s;}
+.skill-card{background:rgba(30,36,50,.5);border:1px solid rgba(255,255,255,.08);padding:1rem;text-align:center;border-radius:12px;}
 .skill-card:hover{border-color:#38bdf8;transform:translateY(-4px);}
 
 /* ---------- PROJECTS ---------- */
 .project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2rem;}
-.project-tile{background:rgba(30,36,50,.5);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;transition:.3s;}
+.project-tile{background:rgba(30,36,50,.5);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;}
 .project-tile:hover{transform:translateY(-6px);border-color:#c084fc;}
 .project-tile h3{padding:1rem;font-size:1.1rem;}
 .project-tile p{padding:0 1rem 1rem;color:#adbac7;font-size:.9rem;}
@@ -91,3 +109,41 @@ footer{text-align:center;padding:2rem 0;font-size:.8rem;color:#586069;}
 .embed-control button{ padding:.6rem 1.5rem; background:#38bdf8; color:#0d1117; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
 .report-box{ position:relative; width:100%; height:0; padding-bottom:56.25%; /* 16:9 aspect */ background:#000; border-radius:12px; overflow:hidden; }
 #pbiFrame{ position:absolute; top:0; left:0; width:100%; height:100%; }
+
+#powerbi-2{  padding:4rem 0;
+  background:rgba(82, 106, 163, 0.35);
+  backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06); }
+.embed-control{ display:flex; gap:1rem; margin-bottom:1.5rem; }
+.embed-control input{ flex:1; padding:.6rem 1rem; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.05); color:#fff; border-radius:8px; }
+.embed-control button{ padding:.6rem 1.5rem; background:#38bdf8; color:#0d1117; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+.report-box{ position:relative; width:100%; height:0; padding-bottom:56.25%; /* 16:9 aspect */ background:#000; border-radius:12px; overflow:hidden; }
+#pbiFrame{ position:absolute; top:0; left:0; width:100%; height:100%; }
+
+
+
+/* ----- D3 Charts: Dark Mode Modern Style ----- */
+/* SVG container */
+svg {
+  display: block;
+  margin: 0 auto 1.5rem auto;
+  background: #121212; /* deep dark background */
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+/* 2. Stop the y-axis labels being clipped */
+svg {
+    overflow: visible;          /* let the text spill outside the viewBox */
+}
+/* The plotted line */
+.line {
+  fill: none;
+  stroke-width: 3.2;
+  filter: drop-shadow(0 0 3px rgba(77, 166, 255, 0.6)); /* soft glow */
+  transition: stroke 0.3s ease;
+}
+.line:hover {
+  stroke: #ff9c66; /* lighter on hover */
+}
