@@ -13,7 +13,7 @@
   <!-- GSAP (animation) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 
@@ -72,11 +72,38 @@
 
 
   <!-- ---------------  D3 CHARTS SECTION --------------- -->
-  <section>
-    <div class="chart-card">
-      <script  src="plot animation.js"></script>
-    </div>
-  </section>
+  
+  <div style="display:flex; gap:2rem; align-items:flex-start">
+    <section id="secA">
+      <h2>Section A</h2>
+      <div id="chartsA"></div>
+    </section>
+
+    <section id="secB">
+      <h2>Section B</h2>
+      <div id="chartsB"></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { drawAllCharts } from './plot_animation.js';
+
+    // Load and parse CSV data
+    const response = await fetch('data.csv');
+    const text = await response.text();
+
+    // Parse CSV into usable objects
+    const data = d3.csvParse(text);
+
+    // Draw both sets of charts
+    drawAllCharts('#chartsA');
+    drawAllCharts('#chartsB');
+  </script>
+
+    
+    
+    
+    
   
   
 

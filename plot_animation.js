@@ -179,7 +179,7 @@ function buildMiniChart(containerId, colName, data, colour = '#4da6ff') {
    ONE FUNCTION = small-multiples (non-Pa) + overlaid Pa chart
    Call:  drawAllCharts(data);
    ========================================================= */
-function drawAllCharts(data) {
+function drawAllCharts(selector) {
   /* ---------- shared geometry ---------- */
   const margin = { top: 20, right: 20, bottom: 30, left: 65 },
         width  = 520 - margin.left - margin.right,
@@ -203,7 +203,7 @@ function drawAllCharts(data) {
     const colours   = ['#ff4d4d','#ff66aa','#66ffcc','#ffcc00','#aa66ff'];
     const dashPat   = ['none','3,3','8,4','8,4,3,4','12,4'];
 
-    const svg = d3.select('body').append('svg')
+    const svg = d3.select(selector).append('svg')
                 .attr('width', width + margin.left + margin.right)
                 .attr('height', height + margin.top + margin.bottom);
     const g = svg.append('g')
@@ -276,7 +276,7 @@ function drawAllCharts(data) {
               .domain(d3.extent(data, d => d[col])).nice()
               .range([height, 0]);
 
-    const svg = d3.select('body').append('svg')
+    const svg = d3.select(selector).append('svg')
                 .attr('width', width + margin.left + margin.right)
                 .attr('height', height + margin.top + margin.bottom);
     const g = svg.append('g')
@@ -325,4 +325,3 @@ function drawAllCharts(data) {
   overlaidPressureChart();
 }
 
-drawAllCharts(data);
