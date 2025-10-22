@@ -179,7 +179,7 @@ function buildMiniChart(containerId, colName, data, colour = '#4da6ff') {
    ONE FUNCTION = small-multiples (non-Pa) + overlaid Pa chart
    Call:  drawAllCharts(data);
    ========================================================= */
-function drawAllCharts(selector) {
+export function drawAllCharts(selector) {
   /* ---------- shared geometry ---------- */
   const margin = { top: 20, right: 20, bottom: 30, left: 65 },
         width  = 520 - margin.left - margin.right,
