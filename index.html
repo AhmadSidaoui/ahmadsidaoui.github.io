@@ -37,33 +37,24 @@
     <div class="logo">AS</div>
     <ul>
       <li><a href="#work">Work</a></li>
-      <li><a href="#skills">Skills</a></li>
+      <li><a href="#skills">Skills</a></li> 
       <li><a href="#projects">Projects</a></li>
+      <li><a href="#powerbi">Dashboards</a></li>
       <li><a href="#contact">Contact</a></li>
-      <li><a href="#powerbi">Dashbaords</a></li>
     </ul>
   </nav>
 
   <!-- --------------- Power BI DASHBOARD SECTION --------------- -->
-  <section id="powerbi" class="glass">
+  <section id="EcoTrack-dashboard">
     <div class="container">
       <h2>Live Dashboard</h2>
-      <p>Paste any Power BI link below and it will appear instantly.</p>
-
-      <!-- paste box + button -->
-      <div class="embed-control">
-        <input type="url" id="pbiUrl" placeholder="https://app.powerbi.com/...">
-        <button onclick="loadReport()">Load</button>
-      </div>
-
+      <h3>EcoTrack Dashbaord</h3>
       <!-- where the report shows up -->
       <div class="report-box">
         <!-- <iframe id="pbiFrame" src="https://app.powerbi.com" frameborder="0" allowFullScreen="true"></iframe> -->
         <iframe title="EcoTrack"
         src="https://app.powerbi.com/view?r=eyJrIjoiNmE0ODZkMmQtYjIwMS00NjU1LThkNzQtNzBiY2EyM2E2NzNjIiwidCI6ImYzYjc2MjBlLTZiMjMtNDBlOS04N2Q5LWQ5ZjI2Y2E0ZmViOSIsImMiOjl9"
-          width="100%"
-          height="100"
-          style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;">
+        class = "powerbi-frame">
         </iframe>      
       </div>
     </div>
