@@ -11,6 +11,11 @@ body{
 a{color:inherit;text-decoration:none;}
 img,video{max-width:100%;display:block;border-radius:12px;}
 
+.h3_center{
+  text-align: center;
+}
+
+
 /* ---------- CONTAINER ---------- */
 /* 1. keep your existing wrapper styles */
 .container {
@@ -98,46 +103,6 @@ footer{text-align:center;padding:2rem 0;font-size:.8rem;color:#586069;}
   .timeline .date{position:static;margin-bottom:.25rem;display:block;}
 }
 
-/* ----- Power-BI section ----- */
-.powerbi-box{  padding:4rem 0;
-  background:rgba(30,36,50,.35);
-  backdrop-filter:blur(10px);
-  border-top:1px solid rgba(255,255,255,.06);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  width: auto;
-  height: auto ;}
-
-.report-box{ position:relative;
-  width:100%; 
-  height: auto;
-  padding-bottom:56.25%; /* 16:9 aspect */ 
-  background:#000; 
-  border-radius:12px; 
-  overflow:hidden; }
-
-
-.powerbi-frame {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-
-#powerbi-2{  padding:4rem 0;
-  background:rgba(82, 106, 163, 0.35);
-  backdrop-filter:blur(10px);
-  border-top:1px solid rgba(255,255,255,.06);
-  border-bottom:1px solid rgba(255,255,255,.06); }
-.embed-control{ display:flex; gap:1rem; margin-bottom:1.5rem; }
-.embed-control input{ flex:1; padding:.6rem 1rem; border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.05); color:#fff; border-radius:8px; }
-.embed-control button{ padding:.6rem 1.5rem; background:#38bdf8; color:#0d1117; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
-#pbiFrame{ position:absolute; top:0; left:0; width:100%; height:100%; }
-
-
-
 /* ----- D3 Charts: Dark Mode Modern Style ----- */
 /* SVG container */
 svg {
@@ -161,4 +126,25 @@ svg {
 }
 .line:hover {
   stroke: #ff9c66; /* lighter on hover */
+}
+
+
+
+/* ----- Power-BI section ----- */
+
+.report-box{ position:relative;
+  width:100%; 
+  height: auto;
+  padding-bottom:56.25%; /* 16:9 aspect */ 
+  margin: 0 auto 1.5rem auto;
+  background:#000; 
+  border-radius:12px; 
+  overflow:hidden; }
+.powerbi-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
