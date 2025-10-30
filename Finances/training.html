@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang = eng>
+
+<head>
+
+    <!-- meta data -->
+     <meta charset = 'UTF-8'>
+     <title>Web Dashboard</title>
+     <meta name = 'viewport' content= "width=device-width, initial-scale = 1.0">
+
+    <!-- stylesheet links -->
+     <link rel = "stylesheet", href = "style.css">
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10/font/bootstrap-icons.css">
+    
+
+    
+    <!-- js scripts links -->
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     <script src="WebDashboard.js"></script>
+
+</head>
+
+
+
+<body>
+
+    <!-- navigation section -->
+    <header class = "header">
+        <h1>Financial Dashboard<span class = "live-indicator"></span></h1>
+        <div class = "header-controls">
+            <!-- Theme Changer and Buttons -->
+                <div class = "theme-switcher">
+                <button class = "theme-btn light active" data-theme= "light" title = "Light Theme"></button>
+                <button class = "theme-btn dark" data-theme="dark" title = "Dark Theme"></button>
+                <button class = "theme-btn sunset" data-theme= "sunset" title = "Sunset Theme"></button>
+                <button class = "theme-btn forest" data-theme= "forest" title = "Forest Theme"></button>
+                </div>
+            <!-- Widget Selector -->
+                <div>
+                <button class = "add-widget-btn" onclick= "openWidgetLibrary()">
+                    <i class = "bi bi bi-plus-circle"></i> Add Widget
+                </button>
+                </div>
+        </div>
+    </header>
+
+
+    <!-- primary content of the page -->
+    <main class = dashboard>
+        <!-- Fixed Elements -->
+        <section class = "top-row">
+            <!-- Chart -->
+            <div class="chart-section">
+                <button class= "delete-widget"  onclick="deleteWidget(this)">
+                    <i class = "bi bi-x"></i>
+                </button>
+                <h2>Savings</h2>
+                <canvas id="myChart"></canvas>
+            </div>
+            <!-- Stats Cards -->
+            <div class = "stats-section">
+                <div class="card">
+                    <button class="delete-widget" onclick="deleteWidget(this)">
+                        <i class="bi bi-x"></i>
+                    </button>
+                    <i class="bi bi-graph-up"></i>
+                    <h3 id="monthlySavings">1,300</h3>
+                    <p>Monthly Savings</p>
+                </div>
+
+                <div class="card">
+                    <button class="delete-widget" onclick="deleteWidget(this)">
+                        <i class="bi bi-x"></i>
+                    </button>
+                    <i class="bi bi-bullseye"></i>
+                    <h3 id="target">10,000</h3>
+                    <p>Target</p>
+                </div>
+            </div>
+            <!-- Widgets Container -->
+            <div id="widgetsContainer">
+                <!-- Added Widgets will display here check .js script -->
+            </div>
+        </section>
+    </main>
+
+
+    <!-- Widget Library -->
+    <div class="widget-library" id="widgetLibrary">
+        <div class="widget-library-content">
+            <!-- Widget Header -->
+            <div class="widget-library-header">
+                <h2>Add Widget</h2>
+                <button class="close-library" onclick="closeWidgetLibrary()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <!-- Widget Grid -->
+            <div class="widget-grid">
+                <!-- Clock Widget -->
+                <div class="widget-option" onclick="addWidget('clock')">
+                    <i class="bi bi-clock"></i>
+                    <p>Clock</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="data-modal" id="dataModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalMonth">Month Details</h3>
+                <button class="close-modal" onclick="closeDataModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Value (EUR)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Data will be populated here -->
+                        </tbody>
+                    </table>
+                    <div class="add-data-form">
+                        <input type="text" id="reasonInput" placeholder="Enter Descripton" class="reason-input">
+                        <input type="number" id="valueInput" placeholder="Value in Eur" class="value-input">
+                        <button onclick="addDataRow()" class="add-data-btn">Add Entry</button>
+                    </div>
+                    <div class="modal-footer">
+                        <button onclick="saveMonthData()" class="save-btn">Save & Close</button>
+                        <button onclick="closeDataModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html> 

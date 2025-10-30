@@ -23,9 +23,9 @@
     <canvas id="particles"></canvas>
     <div class="hero-content">
       <h1 class="name">Ahmad Sidaoui</h1>
-      <p class="tagline">Data Scientist · Data Engineer · Data Visualization Expert</p>
+      <p class="tagline"><u>Data</u> Scientist · <u>Data</u> Engineer · <u>Data</u> Visualization Expert</p>
       <div class="hero-links">
-        <a href = "#powerbi" class = "btn primary">Dashboards</a>
+        <a href = "#Dashboards" class = "btn primary">Dashboards</a>
         <a href="#work" class="btn primary">Experience</a>
         <a href="Ahmad_Sidaoui_CV.pdf" download class="btn ghost">Download CV</a>
         <a href = "Finances/index.html" class = "btn primary">Web Dashboard</a>
@@ -46,66 +46,25 @@
   </nav>
 
 
-  <!-- --------------- Power BI DASHBOARD SECTION --------------- -->
-  <section id="Dashboards">
-
-    <div class="container">
-      <h2>Live Dashboard</h2>
-      <h3 class = "h3_center">EcoTrack Dashbaord</h3>
-      <div class="report-box">
-        <!-- <iframe id="pbiFrame" src="https://app.powerbi.com" frameborder="0" allowFullScreen="true"></iframe> -->
-        <iframe title="EcoTrack"
-        src="https://app.powerbi.com/view?r=eyJrIjoiNmE0ODZkMmQtYjIwMS00NjU1LThkNzQtNzBiY2EyM2E2NzNjIiwidCI6ImYzYjc2MjBlLTZiMjMtNDBlOS04N2Q5LWQ5ZjI2Y2E0ZmViOSIsImMiOjl9"
-        class = "powerbi-frame">
-        </iframe>      
-      </div>
-      <div style="text-align:center; margin-top:40px;">
-        <a href="Dashboards_page.html" class="btn primary">See more Dashbaords</a>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ---------------  D3 CHARTS SECTION --------------- -->
-  
-  <div style="display:flex; gap:2rem; align-items:flex-start">
-    <section id="secA">
-      <h2>Section A</h2>
-      <div id="chartsA"></div>
-    </section>
-
-    <section id="secB">
-      <h2>Section B</h2>
-      <div id="chartsB"></div>
-    </section>
-  </div>
-
-  <script type="module">
-    import { drawAllCharts } from './plot_animation.js';
-
-    // Load and parse CSV data
-    const response = await fetch('data.csv');
-    const text = await response.text();
-
-    // Parse CSV into usable objects
-    const data = d3.csvParse(text);
-
-    // Draw both sets of charts
-    drawAllCharts('#chartsA');
-    drawAllCharts('#chartsB');
-  </script>
-
   <!-- --------------- ABOUT --------------- -->
   <section id="about">
     <div class="container">
       <h2>About Me</h2>
-      <p>
-        I turn complex data into production-grade ML systems that save money and cut CO₂.
-        At <strong>Weatherford</strong> my models reduced project turnaround by <strong>25 %</strong>;
-        at <strong>Datagration</strong> my ESG dashboards helped close Walmart-scale contracts.
-        Currently pursuing an M.Sc. in <strong>Artificial Intelligence</strong> while looking for the next high-impact challenge.
-      </p>
+        <p style="margin:0 0 1rem;">
+          I’m <strong>Ahmad Sidaoui</strong> - a <strong>Data Scientist and Engineer</strong> passionate about 
+          transforming complex data into clear, actionable insights. With experience designing 
+          end-to-end machine learning systems, optimizing <strong>data pipelines</strong>, and building real-time analytics tools, I bridge the worlds of <strong>data science</strong> and 
+          <strong>practical engineering</strong>.<br><br> 
+          
+          I’ve led projects that improved production forecasting accuracy, 
+          streamlined ESG reporting for global enterprises, and empowered teams with 
+          <strong>interactive BI solutions</strong> — all while maintaining a strong focus on innovation and 
+          business impact.<br><br>
+          Outside of work, I enjoy building personal websites, experimenting with code, and spending time in 
+          café shops playing chess or reading books. I also stay active through 
+          basketball and bodybuilding - disciplines that keep me <strong>focused</strong>, 
+          <strong>balanced</strong>, and <strong>goal-oriented</strong>.
+        </p>
     </div>
   </section>
 
@@ -140,13 +99,32 @@
       <div class="grid">
         <div class="skill-card">Python</div>
         <div class="skill-card">SQL</div>
-        <div class="skill-card">Machine Learning</div>
+        <div class="skill-card">AI & Machine Learning</div>
         <div class="skill-card">Airflow</div>
-        <div class="skill-card">Docker</div>
+        <div class="skill-card">Spark & Data Processing</div>
         <div class="skill-card">PowerBI / Spotfire</div>
         <div class="skill-card">AWS</div>
-        <div class="skill-card">Git</div>
+        <div class="skill-card">Git & Version Control</div>
       </div>
+    </div>
+  </section>
+
+  <!-- --------------- Power BI DASHBOARD SECTION --------------- -->
+  <section id="Dashboards">
+    <div class="container">
+      <h2>Live Dashboard</h2>
+      <h3 class = "h3_center">EcoTrack Dashbaord</h3>
+      <div class="report-box">
+        <!-- <iframe id="pbiFrame" src="https://app.powerbi.com" frameborder="0" allowFullScreen="true"></iframe> -->
+        <iframe title="EcoTrack"
+        src="https://app.powerbi.com/view?r=eyJrIjoiNmE0ODZkMmQtYjIwMS00NjU1LThkNzQtNzBiY2EyM2E2NzNjIiwidCI6ImYzYjc2MjBlLTZiMjMtNDBlOS04N2Q5LWQ5ZjI2Y2E0ZmViOSIsImMiOjl9"
+        class = "powerbi-frame">
+        </iframe>      
+      </div>
+      <div style="text-align:center; margin-top:40px;">
+        <a href="Dashboards_page.html" class="btn primary">See more Dashbaords</a>
+      </div>
+
     </div>
   </section>
 
@@ -155,30 +133,22 @@
     <div class="container">
       <h2>Featured Projects</h2>
       <div class="project-grid">
-        <div class="project-tile">
-          <video autoplay muted loop playsinline src="assets/forecast.mp4"></video>
-          <h3>Production Forecasting Engine</h3>
-          <p>25 % faster well-forecast turnaround for Weatherford.</p>
-        </div>
-        <div class="project-tile">
-          <img src="assets/scada.jpg" alt="SCADA room">
-          <h3>Real-Time SCADA Room</h3>
-          <p>Live ops center in Oman reducing deferment.</p>
-        </div>
-        <div class="project-tile">
-          <img src="assets/esg.jpg" alt="ESG dashboard">
+        <a class="project-tile" href="Dashboards_page.html">
           <h3>ESG Recycling Tracker</h3>
-          <p>Consolidates 30+ plants; helped close Walmart contract.</p>
-        </div>
+          <p>Automate the collection, consolidation, and reporting of recycling data
+            from various sources into a single, unified dashboard.
+          </p>
+        </a>
       </div>
     </div>
   </section>
 
   <!-- --------------- GITHUB STATS --------------- -->
   <section id="stats">
-    <div class="container" align="center">
-      <img height="180" src="https://github-readme-stats.vercel.app/api?username=yourhandle&show_icons=true&theme=radical&hide_border=true" alt="GitHub stats">
-      <img height="180" src="https://github-readme-stats.vercel.app/api/top-langs/?username=yourhandle&layout=compact&theme=radical&hide_border=true" alt="Top langs">
+    <div class="git-container">
+      <h2>Git Stats</h2>
+      <img class="git-card" src="https://github-readme-stats.vercel.app/api?username=AhmadSidaoui&show_icons=true&theme=radical&hide_border=true" alt="GitHub stats">
+      <img class="git-card" src="https://github-readme-stats.vercel.app/api/top-langs/?username=AhmadSidaoui&layout=compact&theme=radical&hide_border=true" alt="Top langs">
     </div>
   </section>
 
@@ -188,14 +158,14 @@
       <h2>Let’s Connect</h2>
       <p>ahmadsidaoui@gmail.com | +43 664 2053 998</p>
       <div class="social">
-        <a href="https://linkedin.com/in/ahmadsidaoui" target="_blank"><i class="bi bi-linkedin"></i></a>
-        <a href="https://github.com/yourhandle" target="_blank"><i class="bi bi-github"></i></a>
+        <a href="https://www.linkedin.com/in/ahmad-s-a1586513a/" target="_blank"><i class="bi bi-linkedin"></i></a>
+        <a href="https://github.com/AhmadSidaoui" target="_blank"><i class="bi bi-github"></i></a>
         <a href="Ahmad_Sidaoui_CV.pdf" download><i class="bi bi-file-earmark-pdf"></i></a>
       </div>
     </div>
   </section>
 
-  <footer>© <span id="year"></span> Ahmad Sidaoui. Built with vanilla code & coffee.</footer>
+  <footer>© <span id="year"></span> Ahmad Sidaoui. Built with vanilla code & coffee. ☕😁</footer>
 
   <script src="main.js"></script>
 </body>
