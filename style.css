@@ -80,7 +80,7 @@ h2::after{content:'';position:absolute;left:0;bottom:-6px;height:3px;width:50%;b
 /* ---------- TIMELINE ---------- */
 .timeline{position:relative;padding-left:2rem;border-left:2px solid rgba(120,130,160,.3);}
 .timeline .item{margin-bottom:2.5rem;position:relative;}
-.timeline .date{position:absolute;left:-5.5rem;top:0;font-size:.85rem;color:#8b949e;}
+.timeline .date{position:relative;font-size:.85rem;color:#8b949e;}
 .timeline h3{font-size:1.2rem;margin-bottom:.5rem;}
 .timeline p{color:#adbac7;}
 
