@@ -4,7 +4,7 @@ const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const CSV_FILE = 'data.csv';
 
 // Initialize CSV file with sample data
