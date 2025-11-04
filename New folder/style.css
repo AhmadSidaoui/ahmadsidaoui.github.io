@@ -25,11 +25,21 @@ img,video{max-width:100%;display:block;border-radius:12px;}
 }
 
 .git-container {
-  display: flex;
+  display:flex;
   flex-direction: column;
-  width: 90%;
-  max-width: auto;
+  justify-content: center;
+  width: 90%;  
+  max-width: auto;  
   margin: auto;
+}
+
+.git-card{
+  display: flex;
+  text-align:center;
+  justify-content: center;
+  align-items: center;
+  width:70%;
+  height: 20%;
 }
 
 .container_light {
@@ -41,8 +51,6 @@ img,video{max-width:100%;display:block;border-radius:12px;}
   border-bottom: 1px solid rgba(255, 255, 255, .06);
   /* border-radius: 12px; */
 }
-
-
 
 
 /* ---------- NAVBAR ---------- */
@@ -105,12 +113,6 @@ h2::after{content:'';position:absolute;left:0;bottom:-6px;height:3px;width:50%;b
 .project-tile:hover{transform:translateY(-6px);border-color:#c084fc;}
 .project-tile h3{padding:1rem;font-size:1.1rem;}
 .project-tile p{padding:0 1rem 1rem;color:#adbac7;font-size:.9rem;}
-
-/* ---------- GIT ---------- */
-.git-card{
-  display: flex;
-  padding: 1rem;
-}
 
 /* ---------- CONTACT ---------- */
 #contact{text-align:center;}
