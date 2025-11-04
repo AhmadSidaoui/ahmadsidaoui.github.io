@@ -46,7 +46,7 @@ class CSVTableEditor {
         this.isLoading = true;
         try {
             console.log('Loading CSV data...');
-            const response = await fetch('http://localhost:3000/api/data');
+            const response = await fetch('https://ahmadsidaoui-github-io.onrender.com/api/data');
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -228,7 +228,7 @@ class CSVTableEditor {
 
             console.log('Saving data:', data);
 
-            const response = await fetch('http://localhost:3000/api/save', {
+            const response = await fetch('hhttps://ahmadsidaoui-github-io.onrender.com/api/data', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
