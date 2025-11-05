@@ -228,7 +228,7 @@ class CSVTableEditor {
 
             console.log('Saving data:', data);
 
-            const response = await fetch('https://ahmadsidaoui-github-io.onrender.com/api/data', {
+            const response = await fetch('https://ahmadsidaoui-github-io.onrender.com/api/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

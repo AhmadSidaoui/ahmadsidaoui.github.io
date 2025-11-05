@@ -4,18 +4,31 @@ const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
 
-const PORT = process.env.PORT || 3000;
-const CSV_FILE = 'data.csv';
+// create the port
+const PORT = process.env.PORT || 3000;  // to deploy it on render
+
+// the csv file acting as a Database
+const CSV_FILE = 'data.csv';  
 
 // Initialize CSV file with sample data
 async function initializeCSV() {
     try {
+        // fetch the file
         await fs.access(CSV_FILE);
-        console.log('CSV file exists');
+
+        //log
+        console.log('CSV file exists ✅');
     } catch (error) {
-        const initialData = `Name,Age,City\nJohn Doe,30,New York\nJane Smith,25,London`;
+        // initialize the file if id dies not exist
+        const initialData = `Name,Age,City
+        John Doe,30,New York
+        Jane Smith,25,London`;
+
+        // write to csv file the initialized data
         await fs.writeFile(CSV_FILE, initialData);
-        console.log('Created new CSV file with sample data');
+
+        // log
+        console.log('Created new CSV file with sample data 📁');
     }
 }
 
