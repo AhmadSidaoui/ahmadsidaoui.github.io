@@ -8,7 +8,7 @@ const querystring = require('querystring');
 const PORT = process.env.PORT || 3000;  // to deploy it on render
 
 // the csv file acting as a Database
-const CSV_FILE = 'data.csv';  
+const CSV_FILE = 'DocumentTraker.csv';  
 
 // Initialize CSV file with sample data
 async function initializeCSV() {
@@ -146,9 +146,22 @@ async function handleRequest(req, res) {
         }
     }
 
-    if (pathname === '/style.css') {
+    if (pathname === '/TableStyle.css') {
         try {
-            const content = await fs.readFile('style.css', 'utf8');
+            const content = await fs.readFile('TableStyle.css', 'utf8');
+            res.writeHead(200, { 'Content-Type': 'text/css' });
+            res.end(content);
+            return;
+        } catch (error) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('style.css not found');
+            return;
+        }
+    }
+    
+    if (pathname === '/ageChart.css') {
+        try {
+            const content = await fs.readFile('ageChart.css', 'utf8');
             res.writeHead(200, { 'Content-Type': 'text/css' });
             res.end(content);
             return;
@@ -159,9 +172,9 @@ async function handleRequest(req, res) {
         }
     }
 
-    if (pathname === '/script.js') {
+    if (pathname === '/csv-editor.js') {
         try {
-            const content = await fs.readFile('script.js', 'utf8');
+            const content = await fs.readFile('csv-editor.js', 'utf8');
             res.writeHead(200, { 'Content-Type': 'application/javascript' });
             res.end(content);
             return;

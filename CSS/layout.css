@@ -1,0 +1,51 @@
+/* ---------- LAYOUT / CONTAINERS ---------- */
+.container, .git-container {
+  width: 90%;
+  margin: auto;
+}
+
+.git-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.git-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70%;
+  height: 20%;
+}
+
+.container_light {
+  padding: 4rem 2rem;
+  background: rgba(30, 36, 50, 0.35);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- GRID HELPERS ---------- */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* ---------- SECTION SPACING ---------- */
+section {
+  padding: 6rem 0;
+}
+
+section:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}

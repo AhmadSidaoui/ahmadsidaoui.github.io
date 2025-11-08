@@ -1,0 +1,100 @@
+/* ---------- DASHBOARD BASE THEME ---------- */
+:root {
+  --bg-primary: #f7f8fa;
+  --bg-secondary: #fff;
+  --text-primary: #222;
+  --text-secondary: #555;
+  --accent-color: #2d89ef;
+  --accent-light: rgba(45, 137, 239, 0.2);
+  --shadow: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --text-primary: #eee;
+  --text-secondary: #aaa;
+  --accent-color: #38bdf8;
+}
+
+/* ---------- REPORT / POWER BI EMBED ---------- */
+.report-box {
+  position: relative;
+  padding-bottom: 56.25%;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.powerbi-frame {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---------- DASHBOARD LAYOUT ---------- */
+.dashboard {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.top-row {
+  display: flex;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.chart-section, .stats-section {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+}
+
+.chart-section:hover, .stats-section:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- WIDGETS ---------- */
+.widget {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: 0.3s ease;
+}
+
+.widget:hover {
+  background: var(--accent-light);
+}
+
+/* ---------- MODALS ---------- */
+.data-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.data-modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-hover);
+  max-width: 500px;
+  width: 90%;
+}

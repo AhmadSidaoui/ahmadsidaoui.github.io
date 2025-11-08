@@ -422,19 +422,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     /* Data Modal Styles */
 .data-modal {
   position: fixed;
@@ -599,3 +586,11 @@
   border: 3px solid white !important;
   border-radius: 50% !important;
 }
+
+
+/* Document table */
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left}
+th{color:var(--muted);font-weight:600}
+/* .toggle-btn{background:var(--primary);color:white;border:none;padding:8px 10px;border-radius:8px;cursor:pointer} */
+.status{font-weight:600}

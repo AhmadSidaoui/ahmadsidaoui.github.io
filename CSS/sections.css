@@ -1,0 +1,133 @@
+/* ---------- NAVBAR ---------- */
+#navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(13, 17, 23, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1000;
+  transition: background 0.3s;
+}
+
+#navbar ul {
+  display: flex;
+  gap: 2rem;
+}
+
+#navbar a:hover {
+  color: #38bdf8;
+}
+
+/* ---------- HERO ---------- */
+#hero {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
+/* ---------- TIMELINE ---------- */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+  border-left: 2px solid rgba(120, 130, 160, 0.3);
+}
+
+.timeline-item {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 0.5rem;
+  width: 10px;
+  height: 10px;
+  background: #38bdf8;
+  border-radius: 50%;
+}
+
+/* ---------- SKILLS ---------- */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-top: 40px;
+}
+
+.skill-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.25rem;
+  border-radius: 10px;
+  text-align: center;
+  transition: ease;
+}
+
+.skill-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- PROJECTS ---------- */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 40px;
+}
+
+.project-tile {
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: ease;
+}
+
+.project-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- CONTACT ---------- */
+#contact {
+  text-align: center;
+}
+
+.contact-links a {
+  margin: 0 1rem;
+  font-size: 1.2rem;
+  color: #9ca3af;
+  transition: 0.3s;
+}
+
+.contact-links a:hover {
+  color: #38bdf8;
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.8rem;
+  color: #586069;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}

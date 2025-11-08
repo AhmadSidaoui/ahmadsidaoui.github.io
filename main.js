@@ -8,11 +8,27 @@ function animate(){ctx.clearRect(0,0,W,H);particles.forEach(p=>{p.update();p.dra
 addEventListener('resize',()=>{W=canvas.width=innerWidth;H=canvas.height=innerHeight;});
 init();
 
+
 // ---- scroll animations ----
 gsap.registerPlugin(ScrollTrigger);
-gsap.from('.timeline .item',{opacity:0,x:-60,stagger:.2,scrollTrigger:{trigger:'.timeline',start:'top 80%'}});
-gsap.from('.skill-card',{opacity:0,y:40,stagger:.05,scrollTrigger:{trigger:'#skills',start:'top 80%'}});
-gsap.from('.project-tile',{opacity:0,scale:.8,stagger:.1,scrollTrigger:{trigger:'.project-grid',start:'top 80%'}});
+gsap.from('.timeline .item',
+  {opacity:0,
+    x:-60,
+    stagger:.2,
+    scrollTrigger:{trigger:'.timeline',start:'top 80%'}
+  });
+gsap.from('.skill-card',
+  {opacity:0,
+    y:40,stagger:.05,
+    scrollTrigger:{trigger:'#skills',start:'top 80%'}
+  });
+gsap.from('.project-tile',
+  {opacity:0,
+    scale:.8,
+    stagger:.1,
+    scrollTrigger:{trigger:'.project-grid',start:'top 80%'}
+  });
+
 
 // ---- footer year ----
 document.getElementById('year').textContent=new Date().getFullYear();
