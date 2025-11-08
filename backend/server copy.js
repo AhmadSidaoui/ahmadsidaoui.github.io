@@ -8,7 +8,8 @@ const querystring = require('querystring');
 const PORT = process.env.PORT || 3000;  // to deploy it on render
 
 // the csv file acting as a Database
-const CSV_FILE = 'DocumentTraker.csv';  
+const CSV_FILE = 'DocumentTraker.csv';
+const CHART_CSV = 'savings_data.csv';
 
 // Initialize CSV file with sample data
 async function initializeCSV() {
@@ -33,9 +34,9 @@ async function initializeCSV() {
 }
 
 // Read CSV file
-async function readCSV() {
+async function readCSV(file) {
     try {
-        const content = await fs.readFile(CSV_FILE, 'utf8');
+        const content = await fs.readFile(file, 'utf8');
         const lines = content.trim().split('\n');
         
         if (lines.length === 0) return [];
@@ -59,10 +60,10 @@ async function readCSV() {
 }
 
 // Write to CSV file
-async function writeCSV(data) {
+async function writeCSV(file, data) {
     try {
         if (data.length === 0) {
-            await fs.writeFile(CSV_FILE, '');
+            await fs.writeFile(file, '');
             return;
         }
 
@@ -101,7 +102,19 @@ async function handleRequest(req, res) {
     // API routes - handle these first
     if (pathname === '/api/data' && req.method === 'GET') {
         try {
-            const data = await readCSV();
+            const data = await readCSV(CSV_FILE);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, data: data }));
+        } catch (error) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: error.message }));
+        }
+        return;
+    }
+
+    if (pathname === '/api/chart/data' && req.method === 'GET') {
+        try {
+            const data = await readCSV(CHART_CSV);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: true, data: data }));
         } catch (error) {
@@ -121,7 +134,7 @@ async function handleRequest(req, res) {
         req.on('end', async () => {
             try {
                 const { data } = JSON.parse(body);
-                await writeCSV(data);
+                await writeCSV(CSV_FILE, data);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
             } catch (error) {
@@ -131,6 +144,23 @@ async function handleRequest(req, res) {
         });
         return;
     }
+    if (pathname === '/api/chart/save' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk.toString());
+        req.on('end', async () => {
+            try {
+                const { csvData } = JSON.parse(body);
+                await fs.writeFile(CHART_CSV, csvData, 'utf8');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
+            } catch (error) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: error.message }));
+            }
+        });
+        return;
+    }
+
 
     // Serve static files
     if (pathname === '/' || pathname === '/index.html') {
