@@ -1,14 +1,20 @@
 Month,Year,Reason,Value
-Dec,2025,Income,100
-Jan,2026,Income,100
-Feb,2026,Income,100
-Mar,2026,Income,200
-Apr,2026,Income,200
-May,2026,Income,200
-Jun,2026,Income,200
-Jul,2026,Income,200
-Aug,2026,Income,200
-Sep,2026,Income,200
-Oct,2026,Income,300
-Nov,2026,Income,0
-Dec,2026,Income,0
+Dec,2025,Income,4100
+Dec,2025,Income,-600
+Dec,2025,Income,-340
+Dec,2025,Gym,-160
+Jan,2026,Income,1300
+Feb,2026,Income,1300
+Mar,2026,Income,1300
+Apr,2026,Income,1300
+May,2026,Income,1300
+May,2026,Bonus,2000
+Jun,2026,Income,1300
+Jul,2026,Income,1300
+Jul,2026,Double Salary,2700
+Aug,2026,Income,1300
+Sep,2026,Income,1300
+Oct,2026,Income,1300
+Nov,2026,Income,1300
+Dec,2026,Income,1300
+Dec,2026,Double Salary,2700

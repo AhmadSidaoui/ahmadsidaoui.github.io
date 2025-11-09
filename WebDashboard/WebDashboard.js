@@ -360,7 +360,7 @@ function clearInputs() {
 
 // Save month data and update chart
 function saveMonthData() {
-    chart.data.labels = Object.keys(monthlyData).sort();
+    chart.data.labels = getSortedMonths();
     chart.data.datasets[0].data = calculateMonthlyTotals();
     chart.update();
     updateSavingsDisplay();
