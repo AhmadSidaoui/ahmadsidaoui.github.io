@@ -1,20 +1,19 @@
 Month,Year,Reason,Value
-Dec,2025,Income,4100
-Dec,2025,Income,-600
-Dec,2025,Income,-340
-Dec,2025,Gym,-160
-Jan,2026,Income,1300
-Feb,2026,Income,1300
-Mar,2026,Income,1300
-Apr,2026,Income,1300
-May,2026,Income,1300
-May,2026,Bonus,2000
-Jun,2026,Income,1300
-Jul,2026,Income,1300
-Jul,2026,Double Salary,2700
-Aug,2026,Income,1300
-Sep,2026,Income,1300
-Oct,2026,Income,1300
-Nov,2026,Income,1300
-Dec,2026,Income,1300
-Dec,2026,Double Salary,2700
+Dec,25,income,1300
+Dec,25,double sal,2700
+Jan,26,income,1300
+Feb,26,income,1300
+Mar,26,income,1300
+Mar,26,sdfs,333324234
+Apr,26,income,1300
+Apr,26,bonus,2000
+May,26,income,1300
+Jun,26,income,1300
+Jun,26,double sal,2700
+Jul,26,income,1300
+Aug,26,income,1300
+Sep,26,income,1300
+Oct,26,income,1300
+Nov,26,income,1300
+Dec,26,income,1300
+Dec,26,double sal,2700

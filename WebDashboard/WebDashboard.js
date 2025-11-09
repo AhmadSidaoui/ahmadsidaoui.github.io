@@ -43,6 +43,7 @@ function processCSVData(dataArray) {
         const month = item.Month?.trim();          // e.g., "Dec"
         const year = item.Year?.trim();          // year is actually in Reason
         const key = `${month} ${year}`;            // month + year key
+        const reason = item.Reason;
 
         // The actual value is in Value\r, but currently it's "sal" as a placeholder
         // If you eventually have numeric values, parse them here
@@ -50,7 +51,7 @@ function processCSVData(dataArray) {
         const value = Number(String(valueRaw).trim()) || 0; // fallback to 0 if NaN
 
         if (!monthlyData[key]) monthlyData[key] = [];
-        monthlyData[key].push({ reason: "Income", value }); // reason can be hardcoded if not in CSV
+        monthlyData[key].push({ reason: reason , value }); // reason can be hardcoded if not in CSV
     });
 
     console.log("Processed monthlyData:", monthlyData);
@@ -336,7 +337,7 @@ function addDataRow() {
     monthlyData[currentEditingMonth].push({ reason, value });
     populateDataTable(currentEditingMonth);
     clearInputs();
-    saveToCSV();
+    // saveToCSV();
 }
 
 // Delete data row
@@ -425,18 +426,8 @@ function updateSavings() {
     const monthlyElement = document.getElementById('monthlySavings');
     const currentElement = document.getElementById('currentSavings');
     
-    if (monthlyElement && currentElement) {
-        const months = Object.keys(monthlyData).sort();
-        if (months.length === 0) return;
-        
-        const latestMonth = months[months.length - 1];
-        const monthlyVal = calculateCurrentMonthTotal(latestMonth) + Math.floor(Math.random() * 100);
-        const cumulativeTotals = calculateMonthlyTotals();
-        const currentVal = cumulativeTotals[cumulativeTotals.length - 1] + Math.floor(Math.random() * 50);
-        
-        monthlyElement.textContent = monthlyVal + ' Eur';
-        currentElement.textContent = currentVal + ' Eur';
-    }
+        monthlyElement.textContent = `1300` + ' Eur';
+        currentElement.textContent = `0` + ' Eur';
 }
 
 // Update every 5 seconds
@@ -452,7 +443,7 @@ function closeWidgetLibrary() {
 }
 
 function deleteWidget(btn) {
-    const widget = btn.closest('.card, .chart-section, .clock-widget, .todo-widget');
+    const widget = btn.closest('.card, .chart-section, .clock-widget, .todo-widget, .table-section');
     widget.style.opacity = '0';
     widget.style.transform = 'scale(0.8)';
     setTimeout(() => widget.remove(), 300);

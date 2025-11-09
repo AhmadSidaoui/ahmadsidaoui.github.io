@@ -163,9 +163,9 @@ async function handleRequest(req, res) {
 
 
     // Serve static files
-    if (pathname === '/' || pathname === '/index.html') {
+    if (pathname === '/' || pathname === '../index.html') {
         try {
-            const content = await fs.readFile('index.html', 'utf8');
+            const content = await fs.readFile('../index.html', 'utf8');
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(content);
             return;
@@ -175,23 +175,10 @@ async function handleRequest(req, res) {
             return;
         }
     }
-
-    if (pathname === '/TableStyle.css') {
-        try {
-            const content = await fs.readFile('TableStyle.css', 'utf8');
-            res.writeHead(200, { 'Content-Type': 'text/css' });
-            res.end(content);
-            return;
-        } catch (error) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('style.css not found');
-            return;
-        }
-    }
     
-    if (pathname === '/ageChart.css') {
+    if (pathname === '../style.css') {
         try {
-            const content = await fs.readFile('ageChart.css', 'utf8');
+            const content = await fs.readFile('../style.css', 'utf8');
             res.writeHead(200, { 'Content-Type': 'text/css' });
             res.end(content);
             return;
@@ -202,9 +189,9 @@ async function handleRequest(req, res) {
         }
     }
 
-    if (pathname === '/csv-editor.js') {
+    if (pathname === '../main.js') {
         try {
-            const content = await fs.readFile('csv-editor.js', 'utf8');
+            const content = await fs.readFile('../main.js', 'utf8');
             res.writeHead(200, { 'Content-Type': 'application/javascript' });
             res.end(content);
             return;

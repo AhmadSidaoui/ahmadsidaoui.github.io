@@ -33,39 +33,15 @@
 
 <main class="dashboard">
 
-  <section class="top-row">
+  <div class="finances-section">
+
     <div class="chart-section">
       <button class="delete-widget" onclick="deleteWidget(this)">
         <i class="bi bi-x"></i>
       </button>
-      <h2>Savings</h2>
+      <h2>Projected Savings</h2>
         <canvas id="myChart" width="400" height="200"></canvas>
-
     </div>
-
-
-    <!-- Document Tracker -->
-    <div class="chart-section">
-
-      <button class="delete-widget" onclick="deleteWidget(this)">
-        <i class="bi bi-x"></i>
-      </button>
-    
-      <h2>Document Tracker</h2>
-
-      <div id="tableContainer">
-        <table id="tableCSV">
-          <thead id="tableHeader">
-            <!-- Headers will be populated by JavaScript -->
-          </thead>
-          <tbody id="tableBody">
-            <!-- Rows will be populated by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-    
-    </div>
-
 
     <div class="stats-section">
       <div class="card">
@@ -82,15 +58,38 @@
           <i class="bi bi-x"></i>
         </button>
         <i class="bi bi-cash"></i>
-        <h3 id="currentSavings">900 Eur</h3>
+        <h3 id="currentSavings"></h3>
         <p>Current Savings</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <div class="widgets-container" id="widgetsContainer"></div>
+      <!-- Document Tracker -->
+    <div class="table-section">
+
+        <button class="delete-widget" onclick="deleteWidget(this)">
+          <i class="bi bi-x"></i>
+        </button>
+
+      <h2>Document Tracker</h2>
+
+      <div id="tableContainer">
+        <table id="tableCSV">
+          <thead id="tableHeader">
+            <!-- Headers will be populated by JavaScript -->
+          </thead>
+          <tbody id="tableBody">
+            <!-- Rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    
+    </div>
+
 
 </main>
+
+<div class="widgets-container" id="widgetsContainer"></div>
 
 <!-- Widget Library Modal -->
 <div class="widget-library" id="widgetLibrary">
