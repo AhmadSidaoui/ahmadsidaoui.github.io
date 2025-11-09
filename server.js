@@ -8,8 +8,8 @@ const querystring = require('querystring');
 const PORT = process.env.PORT || 3000;  // to deploy it on render
 
 // the csv file acting as a Database
-const CSV_FILE = 'DocumentTraker.csv';
-const CHART_CSV = 'savings_data.csv';
+const CSV_FILE = 'backend/DocumentTraker.csv';
+const CHART_CSV = 'backend/savings_data.csv';
 
 // Initialize CSV file with sample data
 async function initializeCSV() {
