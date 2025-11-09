@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Express Entry Dashboard — Fixed Chart & Timeline</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --primary:#2563eb;
+      --primary-2:#3b82f6;
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --line:#e6eefc;
+      --success:#16a34a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background:var(--bg);
+      color:#0f172a;
+    }
+    header{
+      background:linear-gradient(90deg,var(--primary),var(--primary-2));
+      color:white;
+      text-align:center;
+      padding:20px 10px;
+      font-weight:700;
+      font-size:20px;
+      box-shadow:0 3px 10px rgba(15,23,42,0.08);
+    }
+
+    .dashboard{
+      max-width:1100px;
+      margin:22px auto;
+      padding:0 18px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:18px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow:0 6px 18px rgba(15,23,42,0.04);
+    }
+
+    .card h3{
+      margin:0 0 14px 0;
+      color:var(--primary);
+      font-size:18px;
+    }
+
+    /* Document table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left}
+    th{color:var(--muted);font-weight:600}
+    .toggle-btn{background:var(--primary);color:white;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .status{font-weight:600}
+
+    /* ---- TIMELINE ---- */
+    .timeline-wrapper{
+      position:relative;
+      padding:18px 12px;
+      height:100px;
+      overflow:visible;
+    }
+    .timeline-bar{
+      position:absolute;
+      left:18px;
+      right:18px;
+      top:50%;
+      height:8px;
+      background:var(--line);
+      border-radius:6px;
+      transform:translateY(-50%);
+      z-index:1;
+    }
+    .timeline-progress{
+      position:absolute;
+      left:18px;
+      top:50%;
+      height:8px;
+      width:0%;
+      background:linear-gradient(90deg,var(--primary),var(--primary-2));
+      border-radius:6px;
+      transform:translateY(-50%);
+      z-index:2;
+      transition:width .35s ease, height .35s ease, top .35s ease;
+    }
+    .timeline-steps{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      height:100%;
+      z-index:3;
+      gap:0;
+      padding:0 18px;
+    }
+    .timeline-step{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      width:1%;
+      min-width:110px;
+      cursor:pointer;
+      user-select:none;
+      padding:6px 4px;
+      text-align:center;
+      transition:color .18s ease;
+    }
+    .timeline-step .dot{
+      width:22px;height:22px;border-radius:50%;
+      background:var(--card);
+      border:4px solid var(--line);
+      box-shadow:0 2px 6px rgba(2,6,23,0.06);
+      transition:background .18s ease, border-color .18s ease, transform .18s ease;
+      margin-bottom:8px;
+    }
+    .timeline-step .label{
+      font-size:14px;color:var(--muted);
+      display:block;
+    }
+    .timeline-step.completed .dot{
+      background:linear-gradient(180deg,var(--primary),var(--primary-2));
+      border-color:var(--card);
+      transform:scale(1.05);
+    }
+    .timeline-step.active .dot{
+      background:var(--card);
+      border-color:var(--primary);
+      box-shadow:0 4px 10px rgba(59,130,246,0.18);
+      transform:scale(1.12);
+    }
+    .timeline-step.completed .label,
+    .timeline-step.active .label{ color:var(--primary); font-weight:600; }
+
+    /* Mobile / vertical layout */
+    @media (max-width:720px){
+      .timeline-wrapper{ height:auto; padding:12px 18px;}
+      .timeline-bar{
+        left:24px;
+        top:12px;
+        bottom:12px;
+        right:auto;
+        width:8px;
+        height:calc(100% - 24px);
+        transform:none;
+      }
+      .timeline-progress{
+        left:24px;
+        top:12px;
+        width:8px;
+        height:0%;
+        right:auto;
+        transform:none;
+      }
+      .timeline-steps{
+        display:block;
+        margin-left:48px;
+      }
+      .timeline-step{
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        gap:12px;
+        padding:10px 6px;
+        min-width:unset;
+      }
+      .timeline-step .dot{ margin:0; }
+      .timeline-step .label{ font-size:15px; }
+    }
+
+    /* ---- CHART ---- */
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 220px;
+    }
+  </style>
+</head>
+<body>
+  <header>Express Entry Dashboard</header>
+
+  <div class="dashboard">
+    <!-- Document card -->
+    <div class="card">
+      <h3>Document Tracker</h3>
+      <table>
+        <tr><th>Document</th><th>Status</th><th>Action</th></tr>
+        <tr><td>Passport</td><td class="status" id="passport">Pending</td><td><button class="toggle-btn" onclick="toggleStatus('passport')">Toggle</button></td></tr>
+        <tr><td>ECA</td><td class="status" id="eca">Pending</td><td><button class="toggle-btn" onclick="toggleStatus('eca')">Toggle</button></td></tr>
+        <tr><td>IELTS/TCF</td><td class="status" id="ielts">Pending</td><td><button class="toggle-btn" onclick="toggleStatus('ielts')">Toggle</button></td></tr>
+        <tr><td>Reference Letters</td><td class="status" id="ref">Pending</td><td><button class="toggle-btn" onclick="toggleStatus('ref')">Toggle</button></td></tr>
+      </table>
+    </div>
+
+    <!-- Budget card -->
+    <div class="card">
+      <h3>Budget Tracker</h3>
+      <div class="chart-container">
+        <canvas id="budgetChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <h3>Timeline</h3>
+
+      <div class="timeline-wrapper" id="timelineWrapper">
+        <div class="timeline-bar"></div>
+        <div class="timeline-progress" id="timelineProgress"></div>
+
+        <div class="timeline-steps" id="timelineSteps">
+          <div class="timeline-step" data-step="1">
+            <div class="dot"></div>
+            <span class="label">Eligibility Check</span>
+          </div>
+          <div class="timeline-step" data-step="2">
+            <div class="dot"></div>
+            <span class="label">Start ECA</span>
+          </div>
+          <div class="timeline-step" data-step="3">
+            <div class="dot"></div>
+            <span class="label">ITA & PR</span>
+          </div>
+          <div class="timeline-step" data-step="4">
+            <div class="dot"></div>
+            <span class="label">End Date</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---------- Document Tracker ---------- */
+    function toggleStatus(id){
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(el.innerText.trim() === "Pending"){
+        el.innerText = "Completed";
+        el.style.color = "var(--success)";
+      } else {
+        el.innerText = "Pending";
+        el.style.color = "";
+      }
+    }
+
+    /* ---------- Chart.js Fixed ---------- */
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['IELTS', 'ECA', 'Passport'],
+        datasets: [{
+          label: 'Cost (USD)',
+          data: [250, 200, 100],
+          borderRadius: 10,
+          backgroundColor: [
+            'rgba(37, 99, 235, 0.9)',
+            'rgba(59, 130, 246, 0.9)',
+            'rgba(147, 197, 253, 0.9)'
+          ],
+          hoverBackgroundColor: [
+            'rgba(37, 99, 235, 1)',
+            'rgba(59, 130, 246, 1)',
+            'rgba(147, 197, 253, 1)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#6b7280' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f0f6ff' },
+            ticks: { color: '#6b7280', stepSize: 50 }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(37,99,235,0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderWidth: 0,
+            padding: 8
+          }
+        }
+      }
+    });
+
+    /* ---------- Timeline Interactivity ---------- */
+    (function(){
+      const steps = Array.from(document.querySelectorAll('.timeline-step'));
+      const progress = document.getElementById('timelineProgress');
+      const wrapper = document.getElementById('timelineWrapper');
+
+      function isVertical(){ return window.matchMedia('(max-width:720px)').matches; }
+
+      function setStep(stepIndex){
+        steps.forEach((s, idx) => {
+          s.classList.remove('active','completed');
+          if(idx < stepIndex - 1) s.classList.add('completed');
+          else if(idx === stepIndex - 1) s.classList.add('active');
+        });
+
+        const target = steps[stepIndex - 1];
+        const barRect = wrapper.querySelector('.timeline-bar').getBoundingClientRect();
+        const targetDot = target.querySelector('.dot').getBoundingClientRect();
+
+        if(isVertical()){
+          const barTop = barRect.top;
+          const barHeight = barRect.height || 1;
+          const centerY = (targetDot.top + targetDot.bottom) / 2;
+          const filled = Math.max(0, Math.min(1, (centerY - barTop) / barHeight));
+          progress.style.height = (filled * 100).toFixed(2) + '%';
+        } else {
+          const barLeft = barRect.left;
+          const barWidth = barRect.width || 1;
+          const centerX = (targetDot.left + targetDot.right) / 2;
+          const filled = Math.max(0, Math.min(1, (centerX - barLeft) / barWidth));
+          progress.style.width = (filled * 100).toFixed(2) + '%';
+        }
+      }
+
+      steps.forEach(s => s.addEventListener('click', () => setStep(+s.dataset.step)));
+      window.addEventListener('resize', () => {
+        const active = steps.findIndex(s => s.classList.contains('active'));
+        setStep(active >= 0 ? active + 1 : 1);
+      });
+
+      setStep(1);
+    })();
+  </script>
+</body>
+</html>

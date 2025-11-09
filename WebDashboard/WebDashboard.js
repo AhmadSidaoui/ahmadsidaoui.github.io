@@ -850,3 +850,54 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeEventListeners() 
         loadCSVData1()
 });
+
+
+
+    /* ---------- Chart.js Fixed ---------- */
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['IELTS', 'ECA', 'Passport'],
+        datasets: [{
+          label: 'Cost (USD)',
+          data: [250, 200, 100],
+          borderRadius: 10,
+          backgroundColor: [
+            'rgba(37, 99, 235, 0.9)',
+            'rgba(59, 130, 246, 0.9)',
+            'rgba(147, 197, 253, 0.9)'
+          ],
+          hoverBackgroundColor: [
+            'rgba(37, 99, 235, 1)',
+            'rgba(59, 130, 246, 1)',
+            'rgba(147, 197, 253, 1)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#6b7280' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f0f6ff' },
+            ticks: { color: '#6b7280', stepSize: 50 }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'rgba(37,99,235,0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderWidth: 0,
+            padding: 8
+          }
+        }
+      }
+    });

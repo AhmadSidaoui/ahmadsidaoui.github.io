@@ -172,6 +172,7 @@ body {
   background: var(--bg-secondary);
   border-radius: 12px;
   padding: 1.5rem;
+  gap: 0.5rem;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
