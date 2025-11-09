@@ -4,7 +4,8 @@ let currentEditingMonth = null;
 let chart;
 
 // Backend API URL
-const API_BASE_URL = 'http://localhost:3000/api';
+// const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://ahmadsidaoui-github-io.onrender.com/api';
 
 
 
