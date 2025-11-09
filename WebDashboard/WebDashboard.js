@@ -632,8 +632,6 @@ function updateCounter(btn, change) {
 
 
 
-const HOST = `http://localhost:3000/`
-
 
 
 class DocumentTracker {
@@ -665,7 +663,7 @@ class DocumentTracker {
     this.isLoading = true;
     try {
       console.log("Loading CSV data...");
-      const response = await fetch(HOST + "api/data");
+      const response = await fetch(API_BASE_URL + "/data");
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -815,7 +813,7 @@ class DocumentTracker {
       });
 
       console.log("🔵 Sending fetch request...");
-      const response = await fetch(HOST + "api/save", {
+      const response = await fetch(API_BASE_URL + "/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
