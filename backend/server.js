@@ -184,7 +184,7 @@ async function handleRequest(req, res) {
             try {
                 const { data } = JSON.parse(body);
                 await writeCSV(CSV_FILE, data);
-                await commitCSVToGitHub(CHART_CSV, 'AhmadSidaoui', 'ahmadsidaoui.github.io', 'Update CSV via server');
+                await commitCSVToGitHub(CSV_FILE, 'AhmadSidaoui', 'ahmadsidaoui.github.io', 'Update CSV via server');
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
             } catch (error) {
