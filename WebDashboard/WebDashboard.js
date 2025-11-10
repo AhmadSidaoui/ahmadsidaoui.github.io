@@ -895,8 +895,8 @@ async function loadChartData() {
     // Assuming API returns something like:
     // { success: true, data: [ { name: "IELTS", cost: 250 }, { name: "ECA", cost: 200 }, ... ] }
 
-    const labels = result.data.map(item => item.name);
-    const values = result.data.map(item => item.cost);
+    const labels = result.data.map(item => item.Description);
+    const values = result.data.map(item => item.Cost);
 
     renderBudgetChart(labels, values);
 
