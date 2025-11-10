@@ -59,6 +59,7 @@ const PORT = process.env.PORT || 3000;  // to deploy it on render
 // the csv file acting as a Database
 const CSV_FILE = 'backend/DocumentTraker.csv';
 const CHART_CSV = 'backend/savings_data.csv';
+const BAR_CSV = 'backend/cost_data.csv';
 
 // Initialize CSV file with sample data
 async function initializeCSV() {
@@ -172,6 +173,26 @@ async function handleRequest(req, res) {
         }
         return;
     }
+
+    if (pathname === '/api/bar/data' && req.method === 'GET') {
+        try {
+            const data = await readCSV(BAR_CSV);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, data: data }));
+        } catch (error) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: error.message }));
+        }
+        return;
+    }
+
+
+
+
+
+
+
+
 
     if (pathname === '/api/save' && req.method === 'POST') {
         let body = '';

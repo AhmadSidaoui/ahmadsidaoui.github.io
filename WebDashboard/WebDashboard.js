@@ -852,54 +852,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    /* ---------- Chart.js Fixed ---------- */
-    const ctx = document.getElementById('budgetChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['IELTS', 'ECA', 'Passport'],
-        datasets: [{
-          label: 'Cost (USD)',
-          data: [250, 200, 100],
-          borderRadius: 10,
-          backgroundColor: [
-            'rgba(37, 99, 235, 0.9)',
-            'rgba(59, 130, 246, 0.9)',
-            'rgba(147, 197, 253, 0.9)'
-          ],
-          hoverBackgroundColor: [
-            'rgba(37, 99, 235, 1)',
-            'rgba(59, 130, 246, 1)',
-            'rgba(147, 197, 253, 1)'
-          ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#6b7280' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: '#f0f6ff' },
-            ticks: { color: '#6b7280', stepSize: 50 }
-          }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function loadChartData() {
+  try {
+    // Fetch your data from the API
+    const response = await fetch(API_BASE_URL + "/bar/data");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error("API returned success: false");
+    }
+
+    // Assuming API returns something like:
+    // { success: true, data: [ { name: "IELTS", cost: 250 }, { name: "ECA", cost: 200 }, ... ] }
+
+    const labels = result.data.map(item => item.name);
+    const values = result.data.map(item => item.cost);
+
+    renderBudgetChart(labels, values);
+
+  } catch (error) {
+    console.error("Error loading chart data:", error);
+  }
+}
+
+function renderBudgetChart(labels, values) {
+  const ctx = document.getElementById('budgetChart').getContext('2d');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cost (USD)',
+        data: values,
+        borderRadius: 10,
+        backgroundColor: [
+          'rgba(37, 99, 235, 0.9)',
+          'rgba(59, 130, 246, 0.9)',
+          'rgba(147, 197, 253, 0.9)'
+        ],
+        hoverBackgroundColor: [
+          'rgba(37, 99, 235, 1)',
+          'rgba(59, 130, 246, 1)',
+          'rgba(147, 197, 253, 1)'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#6b7280' }
         },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(37,99,235,0.9)',
-            titleColor: '#fff',
-            bodyColor: '#fff',
-            borderWidth: 0,
-            padding: 8
-          }
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f0f6ff' },
+          ticks: { color: '#6b7280', stepSize: 50 }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(37,99,235,0.9)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          borderWidth: 0,
+          padding: 8
         }
       }
-    });
+    }
+  });
+}
+
+// Call it when the page loads
+loadChartData();
+
 
 
 
