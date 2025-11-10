@@ -879,36 +879,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 async function loadChartData() {
+  console.log("📊 Starting to load chart data...");
+
   try {
     // Fetch your data from the API
+    console.log(`➡️ Fetching from: ${API_BASE_URL}/bar/data`);
     const response = await fetch(API_BASE_URL + "/bar/data");
+
     if (!response.ok) {
+      console.error(`❌ HTTP error! status: ${response.status}`);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
+    // Parse JSON
     const result = await response.json();
+    console.log("✅ Raw API response:", result);
 
+    // Validate API structure
     if (!result.success) {
+      console.error("⚠️ API returned success: false");
       throw new Error("API returned success: false");
     }
+    if (!Array.isArray(result.data)) {
+      console.error("⚠️ API data is not an array:", result.data);
+      throw new Error("Invalid data format from API");
+    }
 
-    // Assuming API returns something like:
-    // { success: true, data: [ { name: "IELTS", cost: 250 }, { name: "ECA", cost: 200 }, ... ] }
-
+    // Extract labels and values
     const labels = result.data.map(item => item.Description);
     const values = result.data.map(item => item.Cost);
 
+    console.log("📌 Labels:", labels);
+    console.log("💰 Values:", values);
+
+    // Check for empty data
+    if (labels.length === 0 || values.length === 0) {
+      console.warn("⚠️ No data found to render chart!");
+      return;
+    }
+
+    // Render chart
     renderBudgetChart(labels, values);
+    console.log("✅ Chart rendered successfully!");
 
   } catch (error) {
-    console.error("Error loading chart data:", error);
+    console.error("🚨 Error loading chart data:", error);
   }
 }
 
 function renderBudgetChart(labels, values) {
-  const ctx = document.getElementById('budgetChart').getContext('2d');
+  console.log("📈 Rendering chart with data:", { labels, values });
 
-  new Chart(ctx, {
+  const canvas = document.getElementById('budgetChart');
+  if (!canvas) {
+    console.error("❌ Canvas element with ID 'budgetChart' not found!");
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  // Destroy existing chart if it exists (prevents overlay issue)
+  if (window.budgetChartInstance) {
+    console.log("♻️ Destroying existing chart instance...");
+    window.budgetChartInstance.destroy();
+  }
+
+  window.budgetChartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
@@ -954,7 +990,10 @@ function renderBudgetChart(labels, values) {
       }
     }
   });
+
+  console.log("✅ Chart successfully created!");
 }
+
 
 // Call it when the page loads
 
