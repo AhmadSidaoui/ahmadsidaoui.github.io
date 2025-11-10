@@ -7,7 +7,7 @@ const querystring = require('querystring');
 // Github Access
 const { Octokit } = require("@octokit/rest");
 // Access GitHub token from environment variable
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
 if (!GITHUB_TOKEN) {
     console.error("❌ GitHub token not found in environment variables!");
     process.exit(1);

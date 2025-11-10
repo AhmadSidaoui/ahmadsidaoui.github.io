@@ -2,7 +2,7 @@
   "name": "dashboard-backend",
   "version": "1.0.0",
   "description": "Dashboard with CSV backend",
-  "main": "server.js",
+  "main": "backend/server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
