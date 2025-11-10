@@ -48,6 +48,20 @@
         </div>
       </div>
 
+      <div class="card todo-widget">
+          <button class="delete-widget" onclick="deleteWidget(this)">
+              <i class="bi bi-x"></i>
+          </button>
+          <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+          <div class="todo-input-container">
+              <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') addTodo(this)">
+              <button class="todo-add-btn" onclick="addTodo(this.previousElementSibling)">
+                  <i class="bi bi-plus"></i>
+              </button>
+          </div>
+          <ul class="todo-list"></ul>
+      </div>
+
 
     <div class="stats-section">
       <div class="card">
@@ -73,9 +87,9 @@
       <!-- Document Tracker -->
     <div class="table-section">
 
-        <button class="delete-widget" onclick="deleteWidget(this)">
-          <i class="bi bi-x"></i>
-        </button>
+      <button class="delete-widget" onclick="deleteWidget(this)">
+        <i class="bi bi-x"></i>
+      </button>
 
       <h2>Document Tracker</h2>
 
@@ -89,8 +103,40 @@
           </tbody>
         </table>
       </div>
+
+      
+    <div style="grid-column: 1 / -1;">
+      <h3>Timeline</h3>
+      <div class="timeline-wrapper" id="timelineWrapper">
+        <div class="timeline-bar"></div>
+        <div class="timeline-progress" id="timelineProgress"></div>
+        <div class="timeline-steps" id="timelineSteps">
+          <div class="timeline-step" data-step="1">
+            <div class="dot"></div>
+            <span class="label">Eligibility Check</span>
+          </div>
+          <div class="timeline-step" data-step="2">
+            <div class="dot"></div>
+            <span class="label">Start ECA</span>
+          </div>
+          <div class="timeline-step" data-step="3">
+            <div class="dot"></div>
+            <span class="label">ITA & PR</span>
+          </div>
+          <div class="timeline-step" data-step="4">
+            <div class="dot"></div>
+            <span class="label">End Date</span>
+          </div>
+        </div>
+      </div>
     </div>
+
+    </div>
+
+
 </main>
+
+
 
 <div class="widgets-container" id="widgetsContainer"></div>
 
@@ -130,6 +176,8 @@
   </div>
 </div>
 
+
+
 <!-- Detailed Data Modal -->
 <div class="data-modal" id="dataModal">
   <div class="modal-content">
@@ -165,6 +213,12 @@
   </div>
 </div>
 
+
+
 <script src="WebDashboard.js"></script>
 </body>
 </html>
+
+
+
+
