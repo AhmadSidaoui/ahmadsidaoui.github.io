@@ -848,6 +848,7 @@ documentTracker = new DocumentTracker();
 document.addEventListener('DOMContentLoaded', () => {
         initializeEventListeners() 
         loadCSVData1()
+        loadChartData();
 });
 
 
@@ -956,7 +957,6 @@ function renderBudgetChart(labels, values) {
 }
 
 // Call it when the page loads
-loadChartData();
 
 
 
