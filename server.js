@@ -4,6 +4,55 @@ const path = require('path');
 const url = require('url');
 const querystring = require('querystring');
 
+// Github Access
+const { Octokit } = require("@octokit/rest");
+// Access GitHub token from environment variable
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+if (!GITHUB_TOKEN) {
+    console.error("❌ GitHub token not found in environment variables!");
+    process.exit(1);
+}
+const octokit = new Octokit({ auth: GITHUB_TOKEN });
+
+async function commitCSVToGitHub(filePath, repoOwner, repoName, commitMessage) {
+    try {
+        // Read file content
+        const fileContent = await fs.readFile(filePath, 'utf8');
+
+        // Convert content to base64
+        const contentBase64 = Buffer.from(fileContent).toString('base64');
+
+        // Get current file SHA (required for updating existing file)
+        let sha;
+        try {
+            const { data } = await octokit.repos.getContent({
+                owner: repoOwner,
+                repo: repoName,
+                path: filePath,
+            });
+            sha = data.sha;
+        } catch (err) {
+            // File does not exist, that's fine
+            sha = undefined;
+        }
+
+        // Create or update file
+        await octokit.repos.createOrUpdateFileContents({
+            owner: repoOwner,
+            repo: repoName,
+            path: filePath,
+            message: commitMessage,
+            content: contentBase64,
+            sha, // include SHA only if updating
+        });
+
+        console.log(`✅ File ${filePath} committed to GitHub successfully`);
+    } catch (err) {
+        console.error("❌ Failed to commit to GitHub:", err.message);
+    }
+}
+
+
 // create the port
 const PORT = process.env.PORT || 3000;  // to deploy it on render
 
@@ -135,6 +184,7 @@ async function handleRequest(req, res) {
             try {
                 const { data } = JSON.parse(body);
                 await writeCSV(CSV_FILE, data);
+                await commitCSVToGitHub(CHART_CSV, 'AhmadSidaoui', 'ahmadsidaoui.github.io', 'Update CSV via server');
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
             } catch (error) {
@@ -142,8 +192,10 @@ async function handleRequest(req, res) {
                 res.end(JSON.stringify({ success: false, error: error.message }));
             }
         });
+
         return;
     }
+
     if (pathname === '/api/chart/save' && req.method === 'POST') {
         let body = '';
         req.on('data', chunk => body += chunk.toString());
@@ -151,6 +203,7 @@ async function handleRequest(req, res) {
             try {
                 const { csvData } = JSON.parse(body);
                 await fs.writeFile(CHART_CSV, csvData, 'utf8');
+                await commitCSVToGitHub(CHART_CSV, 'AhmadSidaoui', 'ahmadsidaoui.github.io', 'Update CSV via server');
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
             } catch (error) {
@@ -158,6 +211,8 @@ async function handleRequest(req, res) {
                 res.end(JSON.stringify({ success: false, error: error.message }));
             }
         });
+
+
         return;
     }
 
