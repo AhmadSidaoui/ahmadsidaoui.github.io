@@ -25,8 +25,8 @@ for (const endpoint of endpoints) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 const testData = [
-  { Documents: 1, Progress: "Test Document 1"},
-  { Documents: 2, Progress: "Test Document 2"}
+  { Documents: 3, Progress: "Test Document 1"},
+  { Documents: 4, Progress: "Test Document 2"}
 ];
 
 const saveEndpoint = 'save';

@@ -110,8 +110,6 @@ async function readCSV(file) {
 }
 
 // Write to CSV file
-import fs from 'fs/promises';
-import { parse } from 'csv-parse/sync'; // optional CSV parser
 
 async function writeCSV(file, newData) {
     try {
