@@ -2,12 +2,13 @@ import http from 'http';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import querystring from 'querystring';
 import { Octokit } from "@octokit/rest";
 
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Github Access
-const { Octokit } = require("@octokit/rest");
-// Access GitHub token from environment variable
 const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
 if (!GITHUB_TOKEN) {
     console.error("❌ GitHub token not found in environment variables!");
@@ -53,14 +54,13 @@ async function commitCSVToGitHub(filePath, repoOwner, repoName, commitMessage) {
     }
 }
 
-
 // create the port
 const PORT = process.env.PORT || 3000;  // to deploy it on render
 
-// the csv file acting as a Database
-const CSV_FILE = 'backend/DocumentTraker.csv';
-const CHART_CSV = 'backend/savings_data.csv';
-const BAR_CSV = 'backend/cost_data.csv';
+// the csv file acting as a Database - use absolute paths
+const CSV_FILE = path.join(__dirname, 'DocumentTraker.csv');
+const CHART_CSV = path.join(__dirname, 'savings_data.csv');
+const BAR_CSV = path.join(__dirname, 'cost_data.csv');
 
 // Initialize CSV file with sample data
 async function initializeCSV() {
@@ -71,10 +71,10 @@ async function initializeCSV() {
         //log
         console.log('CSV file exists ✅');
     } catch (error) {
-        // initialize the file if id dies not exist
+        // initialize the file if it does not exist
         const initialData = `Name,Age,City
-        John Doe,30,New York
-        Jane Smith,25,London`;
+John Doe,30,New York
+Jane Smith,25,London`;
 
         // write to csv file the initialized data
         await fs.writeFile(CSV_FILE, initialData);
@@ -111,7 +111,6 @@ async function readCSV(file) {
 }
 
 // Write to CSV file
-
 async function writeCSV(file, newData) {
     try {
         let existingData = [];
@@ -155,7 +154,8 @@ async function writeCSV(file, newData) {
 
 // Server request handler
 async function handleRequest(req, res) {
-    const parsedUrl = url.parse(req.url, true);
+    // Use URL constructor instead of url.parse for ES modules
+    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
     const pathname = parsedUrl.pathname;
 
     // Set CORS headers for all responses
@@ -208,14 +208,6 @@ async function handleRequest(req, res) {
         return;
     }
 
-
-
-
-
-
-
-
-
     if (pathname === '/api/save' && req.method === 'POST') {
         let body = '';
         
@@ -255,15 +247,13 @@ async function handleRequest(req, res) {
             }
         });
 
-
         return;
     }
 
-
-    // Serve static files
-    if (pathname === '/' || pathname === '../index.html') {
+    // Serve static files - fix paths to be absolute
+    if (pathname === '/' || pathname === '/index.html') {
         try {
-            const content = await fs.readFile('index.html', 'utf8');
+            const content = await fs.readFile(path.join(process.cwd(), 'index.html'), 'utf8');
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end(content);
             return;
@@ -274,9 +264,9 @@ async function handleRequest(req, res) {
         }
     }
     
-    if (pathname === '../style.css') {
+    if (pathname === '/style.css') {
         try {
-            const content = await fs.readFile('style.css', 'utf8');
+            const content = await fs.readFile(path.join(process.cwd(), 'style.css'), 'utf8');
             res.writeHead(200, { 'Content-Type': 'text/css' });
             res.end(content);
             return;
@@ -287,15 +277,15 @@ async function handleRequest(req, res) {
         }
     }
 
-    if (pathname === '../main.js') {
+    if (pathname === '/main.js') {
         try {
-            const content = await fs.readFile('main.js', 'utf8');
+            const content = await fs.readFile(path.join(process.cwd(), 'main.js'), 'utf8');
             res.writeHead(200, { 'Content-Type': 'application/javascript' });
             res.end(content);
             return;
         } catch (error) {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('script.js not found');
+            res.end('main.js not found');
             return;
         }
     }
