@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Dashboard with CSV backend",
   "main": "backend/server.js",
+  "type": "module",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon server.js"

@@ -110,22 +110,45 @@ async function readCSV(file) {
 }
 
 // Write to CSV file
-async function writeCSV(file, data) {
+import fs from 'fs/promises';
+import { parse } from 'csv-parse/sync'; // optional CSV parser
+
+async function writeCSV(file, newData) {
     try {
-        if (data.length === 0) {
+        let existingData = [];
+
+        // 1. Read existing CSV if it exists
+        try {
+            const content = await fs.readFile(file, 'utf8');
+            if (content.trim()) {
+                const [headerLine, ...lines] = content.split('\n');
+                const headers = headerLine.split(',');
+                existingData = lines.map(line => {
+                    const values = line.split(',');
+                    const obj = {};
+                    headers.forEach((h, i) => obj[h] = values[i]);
+                    return obj;
+                });
+            }
+        } catch {} // ignore if file doesn't exist
+
+        // 2. Merge old + new data
+        const mergedData = [...existingData, ...newData];
+
+        // 3. Write merged data
+        if (mergedData.length === 0) {
             await fs.writeFile(file, '');
             return;
         }
 
-        const headers = Object.keys(data[0]);
+        const headers = Object.keys(mergedData[0]);
         let csvContent = headers.join(',') + '\n';
-        
-        data.forEach(row => {
-            const values = headers.map(header => row[header] || '');
+        mergedData.forEach(row => {
+            const values = headers.map(h => row[h] || '');
             csvContent += values.join(',') + '\n';
         });
-        
-        await fs.writeFile(CSV_FILE, csvContent);
+
+        await fs.writeFile(file, csvContent);
     } catch (error) {
         throw error;
     }

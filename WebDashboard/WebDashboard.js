@@ -648,7 +648,6 @@ class DocumentTracker {
   }
 
   initializeEventListeners() {
-
     this.tableBody.addEventListener("click", (e) => {
       if (e.target.classList.contains(`table-action-btn`)) {
         this.toggleRow(e.target);
@@ -661,10 +660,13 @@ class DocumentTracker {
     if (this.isLoading) return;
 
     this.isLoading = true;
-    try {
-      console.log("Loading CSV data...");
-      const response = await fetch(API_BASE_URL + "/data");
 
+    try {
+        
+        // Call API
+      console.log("Loading Table Data 🔃");
+      const response = await fetch(API_BASE_URL + "/data");
+      // Error Handling
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -676,7 +678,6 @@ class DocumentTracker {
       }
 
       const data = await response.json();
-
       if (data.success) {
         this.renderTable(data.data);
         this.hasUnsavedChanges = false;
@@ -686,29 +687,31 @@ class DocumentTracker {
     } finally {
       this.isLoading = false;
     }
+
   }
+
+  cleartable() {
+    this.tableHeader.innerHTML = ``;
+    this.tableBody.innerHTML = ``;    
+  }
+
+  createHeader(data) {
+    const headerRow = document.createElement('tr');
+    Object.keys(data[0]).forEach(key => {
+        const th = document.createElement('th');
+        th.textContent = key;
+        headerRow.appendChild(th);
+    });
+  }
+
 
   renderTable(data) {
     // Clear existing table
-    // the table header is pointed at in the constructor of this class
-    this.tableHeader.innerHTML = "";
-    this.tableBody.innerHTML = "";
-
-    if (data.length === 0) {
-      this.showMessage("No data found in CSV file", "info");
-      // Create empty table with headers if no data
-      // this.createEmptyTable();
-      return;
-    }
+    this.cleartable();
 
     // Create header row
-    const headerRow = document.createElement("tr");
-    Object.keys(data[0]).forEach((key) => {
-      const th = document.createElement("th");
-      th.textContent = key;
-      headerRow.appendChild(th);
-    });
-
+    this.createHeader(data);
+    
     // Add action column header
     const actionTh = document.createElement("th");
     actionTh.textContent = "Actions";
@@ -721,6 +724,8 @@ class DocumentTracker {
       this.createTableRow(row);
     });
   }
+
+
 
   createTableRow(rowData) {
     const tr = document.createElement("tr");
@@ -754,9 +759,9 @@ class DocumentTracker {
     return tr;
   }
 
- toggleRow(button) {
+  toggleRow(button) {
     console.log("🟡 toggleRow called");
-    
+
     const row = button.closest("tr");
     const secondCell = row.cells[1];
 
@@ -783,7 +788,7 @@ class DocumentTracker {
     console.log("🟡 About to call saveChanges");
     this.saveChanges();
     console.log("🟡 saveChanges returned");
-    }
+  }
 
   async saveChanges(event) {
     console.log("🔵 saveChanges called");
@@ -826,18 +831,15 @@ class DocumentTracker {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       console.log("🔵 Save completed successfully");
       this.hasUnsavedChanges = false;
-      
     } catch (error) {
       console.error("🔵 Error saving data:", error);
     }
-    
+
     console.log("🔵 saveChanges function finished");
-}
-
-
+  }
 }
 
 
