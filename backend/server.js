@@ -1,8 +1,9 @@
-const http = require('http');
-const fs = require('fs').promises;
-const path = require('path');
-const url = require('url');
-const querystring = require('querystring');
+import http from 'http';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import querystring from 'querystring';
+import { Octokit } from "@octokit/rest";
 
 // Github Access
 const { Octokit } = require("@octokit/rest");
