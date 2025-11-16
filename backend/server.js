@@ -193,55 +193,96 @@ class GitHubService {
 
 // Request Handler with Router Pattern
 class RequestHandler {
-    static async handleRequest(req, res) {
-        const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-        const pathname = parsedUrl.pathname;
-        const method = req.method;
+  static async handleRequest(req, res) {
+    console.log(`\n🌐 NEW REQUEST ==================================`);
+    console.log(`📨 Request URL: ${req.url}`);
+    console.log(`📨 Request Method: ${req.method}`);
+    console.log(`📨 Request Headers:`, req.headers);
 
-        // Set CORS headers
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+    const pathname = parsedUrl.pathname;
+    const method = req.method;
 
-        if (method === 'OPTIONS') {
-            res.writeHead(200).end();
-            return;
-        }
+    console.log(`🔍 Parsed URL - Pathname: ${pathname}, Method: ${method}`);
 
-        console.log(`${method} ${pathname}`);
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-        try {
-            // Route handling - FIXED: Pass req and res to handlers
-            const routes = {
-                'GET:/api/data': () => this.handleGetData(req, res),
-                'GET:/api/chart/data': () => this.handleGetChartData(req, res),
-                'GET:/api/bar/data': () => this.handleGetBarData(req, res),
-                'POST:/api/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
-                'POST:/api/chart/save': () => this.handlePostChart(req, res),
-            };
+    console.log(`🔧 CORS headers set`);
 
-            const routeHandler = routes[`${method}:${pathname}`];
-            if (routeHandler) {
-                await routeHandler();
-            } else {
-                await this.handleStaticFiles(req, res, pathname);
-            }
-        } catch (error) {
-            console.error('Error in handleRequest:', error);
-            this.sendError(res, 500, error.message);
-        }
-    }   
+    if (method === 'OPTIONS') {
+      console.log(`🔄 Handling OPTIONS preflight request`);
+      res.writeHead(200).end();
+      return;
+    }
 
-  static async handleGetCSV(filePath, req, res) {
-    console.log(`📊 Handling GET CSV request for: ${filePath}`);
-    
+    console.log(`🛣️ Route: ${method} ${pathname}`);
+
     try {
-      const data = await CSVManager.readCSV(filePath);
+      // Route handling - FIXED: Use separate handler methods
+      const routes = {
+        'GET:/api/data': () => this.handleGetData(req, res),
+        'GET:/api/chart/data': () => this.handleGetChartData(req, res),
+        'GET:/api/bar/data': () => this.handleGetBarData(req, res),
+        'POST:/api/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
+        'POST:/api/chart/save': () => this.handlePostChart(req, res),
+      };
+
+      const routeKey = `${method}:${pathname}`;
+      console.log(`🔍 Looking for route: ${routeKey}`);
+      
+      const routeHandler = routes[routeKey];
+      if (routeHandler) {
+        console.log(`✅ Route found, executing handler`);
+        await routeHandler();
+      } else {
+        console.log(`❌ Route not found, trying static files`);
+        await this.handleStaticFiles(req, res, pathname);
+      }
+    } catch (error) {
+      console.error(`💥 Unhandled error in request handler:`, error);
+      this.sendError(res, 500, error.message);
+    }
+    
+    console.log(`✅ REQUEST COMPLETED =============================\n`);
+  }
+
+  // Separate handler methods for each route
+  static async handleGetData(req, res) {
+    try {
+      console.log("📊 Handling GET /api/data");
+      const data = await CSVManager.readCSV(CSV_FILES.data);
       console.log(`✅ Sending ${data.length} rows of data`);
       this.sendJson(res, 200, { success: true, data });
     } catch (error) {
-      console.error(`❌ Error in handleGetCSV:`, error);
-      this.sendError(res, 500, `Failed to read CSV: ${error.message}`);
+      console.error(`❌ Error in handleGetData:`, error);
+      this.sendError(res, 500, `Failed to read data CSV: ${error.message}`);
+    }
+  }
+
+  static async handleGetChartData(req, res) {
+    try {
+      console.log("📈 Handling GET /api/chart/data");
+      const data = await CSVManager.readCSV(CSV_FILES.chart);
+      console.log(`✅ Sending ${data.length} rows of chart data`);
+      this.sendJson(res, 200, { success: true, data });
+    } catch (error) {
+      console.error(`❌ Error in handleGetChartData:`, error);
+      this.sendError(res, 500, `Failed to read chart CSV: ${error.message}`);
+    }
+  }
+
+  static async handleGetBarData(req, res) {
+    try {
+      console.log("📊 Handling GET /api/bar/data");
+      const data = await CSVManager.readCSV(CSV_FILES.bar);
+      console.log(`✅ Sending ${data.length} rows of bar data`);
+      this.sendJson(res, 200, { success: true, data });
+    } catch (error) {
+      console.error(`❌ Error in handleGetBarData:`, error);
+      this.sendError(res, 500, `Failed to read bar CSV: ${error.message}`);
     }
   }
 
@@ -409,7 +450,9 @@ async function initializeServer() {
       console.log(`❌ ${key} CSV file not found, creating: ${filePath}`);
       const sampleData = key === 'data' 
         ? `Name,Age,City\nJohn Doe,30,New York\nJane Smith,25,London`
-        : 'Category,Value\nSample,100';
+        : key === 'chart'
+        ? `Month,Year,Reason,Value\nJan,2024,Salary,1000\nFeb,2024,Salary,1200`
+        : `Description,Cost\nRent,800\nFood,300\nTransport,150`;
       await fs.writeFile(filePath, sampleData);
       console.log(`📁 Created ${key} CSV file with sample data`);
     }
@@ -429,6 +472,7 @@ async function initializeServer() {
     console.log(`   - http://localhost:${PORT}/api/data`);
     console.log(`   - http://localhost:${PORT}/api/chart/data`);
     console.log(`   - http://localhost:${PORT}/api/bar/data`);
+    console.log(`   - http://localhost:${PORT}/`);
   });
 
   server.on('error', (error) => {
