@@ -193,61 +193,44 @@ class GitHubService {
 
 // Request Handler with Router Pattern
 class RequestHandler {
-  static async handleRequest(req, res) {
-    console.log(`\n🌐 NEW REQUEST ==================================`);
-    console.log(`📨 Request URL: ${req.url}`);
-    console.log(`📨 Request Method: ${req.method}`);
-    console.log(`📨 Request Headers:`, req.headers);
+    static async handleRequest(req, res) {
+        const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+        const pathname = parsedUrl.pathname;
+        const method = req.method;
 
-    const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-    const pathname = parsedUrl.pathname;
-    const method = req.method;
+        // Set CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    console.log(`🔍 Parsed URL - Pathname: ${pathname}, Method: ${method}`);
+        if (method === 'OPTIONS') {
+            res.writeHead(200).end();
+            return;
+        }
 
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        console.log(`${method} ${pathname}`);
 
-    console.log(`🔧 CORS headers set`);
+        try {
+            // Route handling - FIXED: Pass req and res to handlers
+            const routes = {
+                'GET:/api/data': () => this.handleGetData(req, res),
+                'GET:/api/chart/data': () => this.handleGetChartData(req, res),
+                'GET:/api/bar/data': () => this.handleGetBarData(req, res),
+                'POST:/api/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
+                'POST:/api/chart/save': () => this.handlePostChart(req, res),
+            };
 
-    if (method === 'OPTIONS') {
-      console.log(`🔄 Handling OPTIONS preflight request`);
-      res.writeHead(200).end();
-      return;
-    }
-
-    console.log(`🛣️ Route: ${method} ${pathname}`);
-
-    try {
-      // Route handling
-      const routes = {
-        'GET:/api/data': () => this.handleGetCSV(CSV_FILES.data),
-        'GET:/api/chart/data': () => this.handleGetCSV(CSV_FILES.chart),
-        'GET:/api/bar/data': () => this.handleGetCSV(CSV_FILES.bar),
-        'POST:/api/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
-        'POST:/api/chart/save': () => this.handlePostChart(req, res),
-      };
-
-      const routeKey = `${method}:${pathname}`;
-      console.log(`🔍 Looking for route: ${routeKey}`);
-      
-      const routeHandler = routes[routeKey];
-      if (routeHandler) {
-        console.log(`✅ Route found, executing handler`);
-        await routeHandler.call(this, req, res);
-      } else {
-        console.log(`❌ Route not found, trying static files`);
-        await this.handleStaticFiles(req, res, pathname);
-      }
-    } catch (error) {
-      console.error(`💥 Unhandled error in request handler:`, error);
-      this.sendError(res, 500, error.message);
-    }
-    
-    console.log(`✅ REQUEST COMPLETED =============================\n`);
-  }
+            const routeHandler = routes[`${method}:${pathname}`];
+            if (routeHandler) {
+                await routeHandler();
+            } else {
+                await this.handleStaticFiles(req, res, pathname);
+            }
+        } catch (error) {
+            console.error('Error in handleRequest:', error);
+            this.sendError(res, 500, error.message);
+        }
+    }   
 
   static async handleGetCSV(filePath, req, res) {
     console.log(`📊 Handling GET CSV request for: ${filePath}`);
