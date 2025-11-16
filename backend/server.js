@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 
 const CSV_FILES = {
   data: path.join(__dirname, 'DocumentTraker.csv'),
-  chart: path.join(__dirname, 'savings_data.csv'),
-  bar: path.join(__dirname, 'cost_data.csv')
+  chart: path.join(__dirname, 'savings-data.csv'),
+  bar: path.join(__dirname, 'cost-data.csv')
 };
 // Log the CSV file paths
 console.log("📁 CSV File Paths:", CSV_FILES);
