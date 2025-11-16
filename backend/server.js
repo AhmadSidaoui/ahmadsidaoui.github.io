@@ -1,318 +1,355 @@
+// Dependencies
 import http from 'http';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Octokit } from "@octokit/rest";
 
-// Fix for __dirname in ES modules
+// Configuration
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const PORT = process.env.PORT || 3000;
 
-// Github Access
-const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
+const CSV_FILES = {
+  data: path.join(__dirname, 'DocumentTraker.csv'),
+  chart: path.join(__dirname, 'savings_data.csv'),
+  bar: path.join(__dirname, 'cost_data.csv')
+};
+// Log the CSV file paths
+console.log("📁 CSV File Paths:", CSV_FILES);
+
+// GitHub Configuration
+const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN ;
+const GITHUB_CONFIG = {
+  owner: 'AhmadSidaoui',
+  repo: 'ahmadsidaoui.github.io'
+};
+
 if (!GITHUB_TOKEN) {
-    console.error("❌ GitHub token not found in environment variables!");
-    process.exit(1);
+  console.error("❌ GitHub token not found!");
+  process.exit(1);
 }
+
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-async function commitCSVToGitHub(filePath, repoOwner, repoName, commitMessage) {
-    try {
-        // Read file content
-        const fileContent = await fs.readFile(filePath, 'utf8');
 
-        // Convert content to base64
-        const contentBase64 = Buffer.from(fileContent).toString('base64');
 
-        // Get current file SHA (required for updating existing file)
-        let sha;
+
+
+
+/////////////////////////////////////////////////////////////
+// CSV Manager Class
+/////////////////////////////////////////////////////////////
+
+
+
+
+
+
+// Utility Functions
+class CSVManager {
+
+    // Read CSV file and return data as array of objects
+    static async readCSV(filePath) {
+        
         try {
-            const { data } = await octokit.repos.getContent({
-                owner: repoOwner,
-                repo: repoName,
-                path: filePath,
-            });
-            sha = data.sha;
-        } catch (err) {
-            // File does not exist, that's fine
-            sha = undefined;
-        }
-
-        // Create or update file
-        await octokit.repos.createOrUpdateFileContents({
-            owner: repoOwner,
-            repo: repoName,
-            path: filePath,
-            message: commitMessage,
-            content: contentBase64,
-            sha, // include SHA only if updating
-        });
-
-        console.log(`✅ File ${filePath} committed to GitHub successfully`);
-    } catch (err) {
-        console.error("❌ Failed to commit to GitHub:", err.message);
-    }
-}
-
-// create the port
-const PORT = process.env.PORT || 3000;  // to deploy it on render
-
-// the csv file acting as a Database - use absolute paths
-const CSV_FILE = path.join(__dirname, 'DocumentTraker.csv');
-const CHART_CSV = path.join(__dirname, 'savings_data.csv');
-const BAR_CSV = path.join(__dirname, 'cost_data.csv');
-
-// Initialize CSV file with sample data
-async function initializeCSV() {
-    try {
-        // fetch the file
-        await fs.access(CSV_FILE);
-
-        //log
-        console.log('CSV file exists ✅');
-    } catch (error) {
-        // initialize the file if it does not exist
-        const initialData = `Name,Age,City
-John Doe,30,New York
-Jane Smith,25,London`;
-
-        // write to csv file the initialized data
-        await fs.writeFile(CSV_FILE, initialData);
-
-        // log
-        console.log('Created new CSV file with sample data 📁');
-    }
-}
-
-// Read CSV file
-async function readCSV(file) {
-    try {
-        const content = await fs.readFile(file, 'utf8');
+        // Read file content
+        const content = await fs.readFile(filePath, 'utf8');
+        // Parse CSV content to array of objects
         const lines = content.trim().split('\n');
         
         if (lines.length === 0) return [];
-        
-        const headers = lines[0].split(',');
-        const data = [];
-        
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',');
-            const row = {};
+
+        // Extract headers
+        const headers = lines[0].split(',').map(h => h.trim());
+        // Map lines to objects
+        return lines.slice(1).map(line => {
+            const values = line.split(',');
+            // Create a js object for each row
+            const row = {}; 
             headers.forEach((header, index) => {
-                row[header] = values[index] || '';
+            row[header] = (values[index] || '').trim();
             });
-            data.push(row);
-        }
-        
-        return data;
-    } catch (error) {
-        throw error;
-    }
-}
-
-// Write to CSV file
-async function writeCSV(file, newData) {
-    try {
-        let existingData = [];
-
-        // 1. Read existing CSV if it exists
-        try {
-            const content = await fs.readFile(file, 'utf8');
-            if (content.trim()) {
-                const [headerLine, ...lines] = content.split('\n');
-                const headers = headerLine.split(',');
-                existingData = lines.map(line => {
-                    const values = line.split(',');
-                    const obj = {};
-                    headers.forEach((h, i) => obj[h] = values[i]);
-                    return obj;
-                });
-            }
-        } catch {} // ignore if file doesn't exist
-
-        // 2. Merge old + new data
-        const mergedData = [...existingData, ...newData];
-
-        // 3. Write merged data
-        if (mergedData.length === 0) {
-            await fs.writeFile(file, '');
-            return;
-        }
-
-        const headers = Object.keys(mergedData[0]);
-        let csvContent = headers.join(',') + '\n';
-        mergedData.forEach(row => {
-            const values = headers.map(h => row[h] || '');
-            csvContent += values.join(',') + '\n';
+            return row;
         });
-
-        await fs.writeFile(file, csvContent);
-    } catch (error) {
+        } catch (error) {
+        if (error.code === 'ENOENT') return []; // File doesn't exist
         throw error;
+        }
     }
+
+
+  static async writeCSV(filePath, newData) {
+    if (!newData || newData.length === 0) {
+      await fs.writeFile(filePath, '');
+      return;
+    }
+
+    const headers = Object.keys(newData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...newData.map(row => headers.map(h => row[h] || '').join(','))
+    ].join('\n');
+
+    await fs.writeFile(filePath, csvContent);
+  }
+
+  static async appendCSV(filePath, newData) {
+    const existingData = await this.readCSV(filePath);
+    const mergedData = [...existingData, ...newData];
+    await this.writeCSV(filePath, mergedData);
+  }
 }
 
-// Server request handler
-async function handleRequest(req, res) {
-    // Use URL constructor instead of url.parse for ES modules
+
+
+
+
+/////////////////////////////////////////////////////////////
+// GitHub Service Class
+/////////////////////////////////////////////////////////////
+
+
+
+
+
+class GitHubService {
+  static async commitFile(filePath, commitMessage) {
+    try {
+      const fileContent = await fs.readFile(filePath, 'utf8');
+      const contentBase64 = Buffer.from(fileContent).toString('base64');
+
+      let sha;
+      try {
+        const { data } = await octokit.repos.getContent({
+          ...GITHUB_CONFIG,
+          path: path.basename(filePath),
+        });
+        sha = data.sha;
+      } catch (err) {
+        sha = undefined; // File doesn't exist on GitHub
+      }
+
+      await octokit.repos.createOrUpdateFileContents({
+        ...GITHUB_CONFIG,
+        path: path.basename(filePath),
+        message: commitMessage,
+        content: contentBase64,
+        sha,
+      });
+
+      console.log(`✅ ${path.basename(filePath)} committed to GitHub`);
+      return true;
+    } catch (err) {
+      console.error("❌ GitHub commit failed:", err.message);
+      return false;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////
+// Request Handler Class
+/////////////////////////////////////////////////////////////
+
+
+
+
+
+// Request Handler with Router Pattern
+class RequestHandler {
+
+  static async handleRequest(req, res) {
     const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
     const pathname = parsedUrl.pathname;
+    const method = req.method;
 
-    // Set CORS headers for all responses
+    // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
+    if (method === 'OPTIONS') {
+      res.writeHead(200).end();
+      return;
     }
 
-    console.log(`Request: ${req.method} ${pathname}`);
+    console.log(`${method} ${pathname}`);
 
-    // API routes - handle these first
-    if (pathname === '/api/data' && req.method === 'GET') {
-        try {
-            const data = await readCSV(CSV_FILE);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true, data: data }));
-        } catch (error) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: error.message }));
-        }
-        return;
+    try {
+      // Route handling
+      const routes = {
+        'GET:/api/data': () => this.handleGetCSV(CSV_FILES.data),
+        'GET:/api/chart/data': () => this.handleGetCSV(CSV_FILES.chart),
+        'GET:/api/bar/data': () => this.handleGetCSV(CSV_FILES.bar),
+        'POST:/api/save': () => this.handlePostCSV(CSV_FILES.data),
+        'POST:/api/chart/save': () => this.handlePostChart(),
+      };
+
+      const routeHandler = routes[`${method}:${pathname}`];
+      if (routeHandler) {
+        await routeHandler.call(this, req, res);
+      } else {
+        await this.handleStaticFiles(req, res, pathname);
+      }
+    } catch (error) {
+      this.sendError(res, 500, error.message);
+    }
+  }
+
+
+
+  static async handleGetCSV(filePath) {
+    const data = await CSVManager.readCSV(filePath);
+    return { success: true, data };
+  }
+
+
+
+  static async handlePostCSV(req, res, filePath) {
+    const body = await this.parseRequestBody(req);
+    const { data } = body;
+
+    if (!Array.isArray(data)) {
+      throw new Error('Data must be an array');
     }
 
-    if (pathname === '/api/chart/data' && req.method === 'GET') {
-        try {
-            const data = await readCSV(CHART_CSV);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true, data: data }));
-        } catch (error) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: error.message }));
-        }
-        return;
-    }
-
-    if (pathname === '/api/bar/data' && req.method === 'GET') {
-        try {
-            const data = await readCSV(BAR_CSV);
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true, data: data }));
-        } catch (error) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: error.message }));
-        }
-        return;
-    }
-
-    if (pathname === '/api/save' && req.method === 'POST') {
-        let body = '';
-        
-        req.on('data', chunk => {
-            body += chunk.toString();
-        });
-        
-        req.on('end', async () => {
-            try {
-                const { data } = JSON.parse(body);
-                await writeCSV(CSV_FILE, data);
-                await commitCSVToGitHub(CSV_FILE, 'AhmadSidaoui', 'ahmadsidaoui.github.io', 'Update CSV via server');
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
-            } catch (error) {
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: false, error: error.message }));
-            }
-        });
-
-        return;
-    }
-
-    if (pathname === '/api/chart/save' && req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => body += chunk.toString());
-        req.on('end', async () => {
-            try {
-                const { csvData } = JSON.parse(body);
-                await fs.writeFile(CHART_CSV, csvData, 'utf8');
-                await commitCSVToGitHub(CHART_CSV, 'AhmadSidaoui', 'ahmadsidaoui.github.io', 'Update CSV via server');
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, message: 'Data saved successfully' }));
-            } catch (error) {
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: false, error: error.message }));
-            }
-        });
-
-        return;
-    }
-
-    // Serve static files - fix paths to be absolute
-    if (pathname === '/' || pathname === '/index.html') {
-        try {
-            const content = await fs.readFile(path.join(process.cwd(), 'index.html'), 'utf8');
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(content);
-            return;
-        } catch (error) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('index.html not found');
-            return;
-        }
-    }
+    await CSVManager.appendCSV(filePath, data);
+    await GitHubService.commitFile(filePath, `Update ${path.basename(filePath)} via server`);
     
-    if (pathname === '/style.css') {
-        try {
-            const content = await fs.readFile(path.join(process.cwd(), 'style.css'), 'utf8');
-            res.writeHead(200, { 'Content-Type': 'text/css' });
-            res.end(content);
-            return;
-        } catch (error) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('style.css not found');
-            return;
-        }
+    this.sendJson(res, 200, { success: true, message: 'Data saved successfully' });
+  }
+
+
+
+
+  static async handlePostChart(req, res) {
+    const body = await this.parseRequestBody(req);
+    const { csvData } = body;
+
+    if (typeof csvData !== 'string') {
+      throw new Error('csvData must be a string');
     }
 
-    if (pathname === '/main.js') {
-        try {
-            const content = await fs.readFile(path.join(process.cwd(), 'main.js'), 'utf8');
-            res.writeHead(200, { 'Content-Type': 'application/javascript' });
-            res.end(content);
-            return;
-        } catch (error) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('main.js not found');
-            return;
-        }
-    }
+    await fs.writeFile(CSV_FILES.chart, csvData, 'utf8');
+    await GitHubService.commitFile(CSV_FILES.chart, 'Update chart data via server');
+    
+    this.sendJson(res, 200, { success: true, message: 'Chart data saved successfully' });
+  }
 
-    // 404 for other routes
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not found');
+
+
+  static async handleStaticFiles(req, res, pathname) {
+    const staticFiles = {
+      '/': 'index.html',
+      '/index.html': 'index.html',
+      '/style.css': 'style.css',
+      '/main.js': 'main.js'
+    };
+
+    const file = staticFiles[pathname];
+    if (file) {
+      try {
+        const content = await fs.readFile(path.join(process.cwd(), file), 'utf8');
+        const contentType = this.getContentType(file);
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(content);
+      } catch (error) {
+        this.sendError(res, 404, `${file} not found`);
+      }
+    } else {
+      this.sendError(res, 404, 'Not found');
+    }
+  }
+  
+
+  static async parseRequestBody(req) {
+    return new Promise((resolve, reject) => {
+      let body = '';
+      req.on('data', chunk => body += chunk.toString());
+      req.on('end', () => {
+        try {
+          resolve(body ? JSON.parse(body) : {});
+        } catch (error) {
+          reject(new Error('Invalid JSON'));
+        }
+      });
+      req.on('error', reject);
+    });
+  }
+
+  static sendJson(res, statusCode, data) {
+    res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(data));
+  }
+
+  static sendError(res, statusCode, message) {
+    this.sendJson(res, statusCode, { success: false, error: message });
+  }
+
+  static getContentType(filename) {
+    const ext = path.extname(filename);
+    const types = {
+      '.html': 'text/html',
+      '.css': 'text/css',
+      '.js': 'application/javascript',
+      '.json': 'application/json'
+    };
+    return types[ext] || 'text/plain';
+  }
 }
 
-// Create and start server
-async function startServer() {
-    await initializeCSV();
-    
-    const server = http.createServer(handleRequest);
-    
-    server.listen(PORT, () => {
-        console.log(`✅ Server running at http://localhost:${PORT}`);
-        console.log(`📁 CSV file: ${CSV_FILE}`);
-        console.log('🛑 Press Ctrl+C to stop the server');
-    });
+// Server Initialization
+async function initializeServer() {
+  // Initialize CSV files if they don't exist
+  for (const [key, filePath] of Object.entries(CSV_FILES)) {
+    try {
+      await fs.access(filePath);
+      console.log(`✅ ${key} CSV file exists`);
+    } catch (error) {
+      const sampleData = key === 'data' 
+        ? `Name,Age,City\nJohn Doe,30,New York\nJane Smith,25,London`
+        : '';
+      await fs.writeFile(filePath, sampleData);
+      console.log(`📁 Created ${key} CSV file`);
+    }
+  }
 
-    server.on('error', (error) => {
-        if (error.code === 'EADDRINUSE') {
-            console.log(`❌ Port ${PORT} is already in use. Please use a different port.`);
-            process.exit(1);
-        }
-    });
+  const server = http.createServer(RequestHandler.handleRequest.bind(RequestHandler));
+  
+  server.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 CSV files: ${Object.values(CSV_FILES).map(f => path.basename(f)).join(', ')}`);
+  });
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.log(`❌ Port ${PORT} busy, trying ${Number(PORT) + 1}...`);
+      server.listen(Number(PORT) + 1);
+    } else {
+      console.error('❌ Server error:', error);
+    }
+  });
+
+  return server;
 }
 
-startServer().catch(console.error);
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 Server shutting down...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 Server interrupted');
+  process.exit(0);
+});
+
+// Start server
+initializeServer().catch(console.error);
