@@ -213,7 +213,7 @@ class BudgetChart extends DataVisualization {
             window.budgetChartInstance.destroy();
         }
 
-        window.budgetChartInstance = new Chart(this.container, {
+        this.chart = new Chart(this.container, {
             type: 'bar',
             data: {
                 labels: labels,
@@ -460,6 +460,7 @@ class DynamicTable {
             saveEndpoint: config.saveEndpoint || '/save',
             actions: config.actions || ['toggle'],
             columns: config.columns || [],
+            rowStyling: config.rowStyling || this.defaultRowStyling,
             ...config
         };
         this.data = [];
@@ -474,19 +475,22 @@ class DynamicTable {
     }
 
     createTableStructure() {
+        // Clear existing content and create fresh table structure
         this.container.innerHTML = `
-            <div class="table-header">
-                <h3>${this.config.title || 'Data Table'}</h3>
-            </div>
             <table>
-                <thead id="${this.config.containerId}-header"></thead>
-                <tbody id="${this.config.containerId}-body"></tbody>
+                <thead id="${this.config.containerId || 'table'}-header"></thead>
+                <tbody id="${this.config.containerId || 'table'}-body"></tbody>
             </table>
         `;
         
-        this.tableHeader = document.getElementById(`${this.config.containerId}-header`);
-        this.tableBody = document.getElementById(`${this.config.containerId}-body`);
+        this.tableHeader = document.getElementById(`${this.config.containerId || 'table'}-header`);
+        this.tableBody = document.getElementById(`${this.config.containerId || 'table'}-body`);
         
+        // Initialize event listeners
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
         if (this.config.actions.includes('click')) {
             this.tableBody.addEventListener('click', (e) => this.handleRowClick(e));
         }
@@ -513,20 +517,18 @@ class DynamicTable {
         this.tableHeader.innerHTML = '';
         const headerRow = document.createElement('tr');
         
-        if (this.data.length > 0) {
-            Object.keys(this.data[0]).forEach(key => {
-                const th = document.createElement('th');
-                th.textContent = key;
-                headerRow.appendChild(th);
-            });
-        } else if (this.config.columns.length > 0) {
-            this.config.columns.forEach(column => {
-                const th = document.createElement('th');
-                th.textContent = column;
-                headerRow.appendChild(th);
-            });
-        }
+        // Use provided columns or infer from data
+        const headers = this.config.columns.length > 0 ? 
+            this.config.columns : 
+            (this.data.length > 0 ? Object.keys(this.data[0]) : []);
         
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+        
+        // Add actions column if needed
         if (this.config.actions.length > 0) {
             const actionTh = document.createElement('th');
             actionTh.textContent = 'Actions';
@@ -540,30 +542,38 @@ class DynamicTable {
         this.tableBody.innerHTML = '';
         
         this.data.forEach((rowData, index) => {
-            const tr = document.createElement('tr');
-            
-            Object.values(rowData).forEach(value => {
-                const td = document.createElement('td');
-                td.textContent = value;
-                tr.appendChild(td);
-            });
-
-            this.applyRowStyling(tr, rowData);
-            
-            if (this.config.actions.length > 0) {
-                const actionTd = document.createElement('td');
-                this.config.actions.forEach(action => {
-                    actionTd.appendChild(this.createActionButton(action, index));
-                });
-                tr.appendChild(actionTd);
-            }
-            
+            const tr = this.createTableRow(rowData, index);
             this.tableBody.appendChild(tr);
         });
     }
 
-    applyRowStyling(tr, rowData) {
-        // Override this method in subclasses for custom styling
+    createTableRow(rowData, index) {
+        const tr = document.createElement('tr');
+        
+        // Create data cells
+        Object.values(rowData).forEach(value => {
+            const td = document.createElement('td');
+            td.textContent = value;
+            tr.appendChild(td);
+        });
+
+        // Apply custom styling
+        this.config.rowStyling(tr, rowData);
+        
+        // Add action buttons
+        if (this.config.actions.length > 0) {
+            const actionTd = document.createElement('td');
+            this.config.actions.forEach(action => {
+                actionTd.appendChild(this.createActionButton(action, index, rowData));
+            });
+            tr.appendChild(actionTd);
+        }
+        
+        return tr;
+    }
+
+    defaultRowStyling(tr, rowData) {
+        // Default styling based on status column
         const secondCell = tr.cells[1];
         if (secondCell && secondCell.textContent.trim().toLowerCase() === 'completed') {
             tr.style.backgroundColor = 'lightgreen';
@@ -571,7 +581,7 @@ class DynamicTable {
         }
     }
 
-    createActionButton(action, index) {
+    createActionButton(action, index, rowData) {
         const button = document.createElement('button');
         button.type = 'button';
         
@@ -579,12 +589,17 @@ class DynamicTable {
             case 'toggle':
                 button.textContent = 'Toggle';
                 button.className = 'table-action-btn';
-                button.onclick = (e) => this.toggleRow(e.target);
+                button.onclick = (e) => this.toggleRow(e.target, rowData);
                 break;
             case 'delete':
                 button.textContent = 'Delete';
                 button.className = 'delete-row';
                 button.onclick = () => this.deleteRow(index);
+                break;
+            case 'edit':
+                button.textContent = 'Edit';
+                button.className = 'edit-row';
+                button.onclick = () => this.editRow(index);
                 break;
             default:
                 button.textContent = action;
@@ -594,24 +609,19 @@ class DynamicTable {
         return button;
     }
 
-    toggleRow(button) {
+    toggleRow(button, rowData) {
         const row = button.closest('tr');
-        const secondCell = row.cells[1];
+        const statusCell = row.cells[1]; // Assuming status is in second column
 
-        if (!secondCell) return;
+        if (!statusCell) return;
 
-        const currentStatus = secondCell.textContent.trim().toLowerCase();
+        const currentStatus = statusCell.textContent.trim().toLowerCase();
         const newStatus = currentStatus === 'completed' ? 'Pending' : 'Completed';
 
-        secondCell.textContent = newStatus;
+        statusCell.textContent = newStatus;
         
-        if (newStatus === 'Completed') {
-            row.style.backgroundColor = 'lightgreen';
-            Array.from(row.cells).forEach(cell => cell.style.fontWeight = 'bold');
-        } else {
-            row.style.backgroundColor = '';
-            Array.from(row.cells).forEach(cell => cell.style.fontWeight = 'normal');
-        }
+        // Update row styling
+        this.config.rowStyling(row, { ...rowData, Status: newStatus });
 
         this.hasUnsavedChanges = true;
         this.saveChanges();
@@ -649,8 +659,18 @@ class DynamicTable {
         this.saveChanges();
     }
 
+    editRow(index) {
+        // Override for custom edit functionality
+        console.log('Edit row:', index);
+    }
+
     handleRowClick(event) {
         // Override for custom click handling
+    }
+
+    // Public method to refresh table data
+    async refresh() {
+        await this.loadData();
     }
 }
 
@@ -1026,8 +1046,8 @@ class Application {
 
     updateChartsTheme() {
         this.savingsChart.updateTheme();
-        if (window.budgetChartInstance) {
-            window.budgetChartInstance.update();
+        if (this.budgetChart.chart) {
+            this.budgetChart.chart.update();
         }
     }
 

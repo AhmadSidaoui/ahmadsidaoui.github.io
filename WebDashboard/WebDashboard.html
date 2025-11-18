@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body data-theme="light">
@@ -29,17 +28,15 @@
     </div>
   </header>
 
+  <main class="dashboard">
 
+    <div class="finances-section">
 
-<main class="dashboard">
-
-  <div class="finances-section">
-
-    <div class="chart-section">
-      <button class="delete-widget" onclick="deleteWidget(this)">
-        <i class="bi bi-x"></i>
-      </button>
-      <h2>Projected Savings</h2>
+      <div class="chart-section">
+        <button class="delete-widget" onclick="deleteWidget(this)">
+          <i class="bi bi-x"></i>
+        </button>
+        <h2>Projected Savings</h2>
         <div>
           <canvas id="myChart" width="400" height="200"></canvas>
         </div>
@@ -49,176 +46,157 @@
       </div>
 
       <div class="card todo-widget">
-          <button class="delete-widget" onclick="deleteWidget(this)">
-              <i class="bi bi-x"></i>
+        <button class="delete-widget" onclick="deleteWidget(this)">
+          <i class="bi bi-x"></i>
+        </button>
+        <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+        <div class="todo-input-container">
+          <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') addTodo(this)">
+          <button class="todo-add-btn" onclick="addTodo(this.previousElementSibling)">
+            <i class="bi bi-plus"></i>
           </button>
-          <h3><i class="bi bi-check2-square"></i> Todo List</h3>
-          <div class="todo-input-container">
-              <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') addTodo(this)">
-              <button class="todo-add-btn" onclick="addTodo(this.previousElementSibling)">
-                  <i class="bi bi-plus"></i>
-              </button>
-          </div>
-          <ul class="todo-list"></ul>
+        </div>
+        <ul class="todo-list"></ul>
       </div>
 
+      <div class="stats-section">
+        <div class="card">
+          <button class="delete-widget" onclick="deleteWidget(this)">
+            <i class="bi bi-x"></i>
+          </button>
+          <i class="bi bi-graph-up"></i>
+          <h3 id="monthlySavings">1300 Eur</h3>
+          <p>Monthly Savings</p>
+        </div>
 
-    <div class="stats-section">
-      <div class="card">
-        <button class="delete-widget" onclick="deleteWidget(this)">
-          <i class="bi bi-x"></i>
-        </button>
-        <i class="bi bi-graph-up"></i>
-        <h3 id="monthlySavings">1300 Eur</h3>
-        <p>Monthly Savings</p>
-      </div>
-
-      <div class="card">
-        <button class="delete-widget" onclick="deleteWidget(this)">
-          <i class="bi bi-x"></i>
-        </button>
-        <i class="bi bi-cash"></i>
-        <h3 id="currentSavings"></h3>
-        <p>Current Savings</p>
+        <div class="card">
+          <button class="delete-widget" onclick="deleteWidget(this)">
+            <i class="bi bi-x"></i>
+          </button>
+          <i class="bi bi-cash"></i>
+          <h3 id="currentSavings"></h3>
+          <p>Current Savings</p>
+        </div>
       </div>
     </div>
-  </div>
 
-      <!-- Document Tracker -->
+    <!-- Document Tracker -->
     <div class="table-section">
-
       <button class="delete-widget" onclick="deleteWidget(this)">
         <i class="bi bi-x"></i>
       </button>
-
       <h2>Document Tracker</h2>
-
-      <div id="tableContainer">
-        <table id="tableCSV">
-          <thead id="tableHeader">
-            <!-- Headers will be populated by JavaScript -->
-          </thead>
-          <tbody id="tableBody">
-            <!-- Rows will be populated by JavaScript -->
-          </tbody>
-        </table>
-      </div>
-
       
-    <div style="grid-column: 1 / -1;">
-      <h3>Timeline</h3>
-      <div class="timeline-wrapper" id="timelineWrapper">
-        <div class="timeline-bar"></div>
-        <div class="timeline-progress" id="timelineProgress"></div>
-        <div class="timeline-steps" id="timelineSteps">
-          <div class="timeline-step" data-step="1">
-            <div class="dot"></div>
-            <span class="label">Eligibility Check</span>
-          </div>
-          <div class="timeline-step" data-step="2">
-            <div class="dot"></div>
-            <span class="label">Start ECA</span>
-          </div>
-          <div class="timeline-step" data-step="3">
-            <div class="dot"></div>
-            <span class="label">ITA & PR</span>
-          </div>
-          <div class="timeline-step" data-step="4">
-            <div class="dot"></div>
-            <span class="label">End Date</span>
+      <!-- Updated table structure -->
+      <div id="tableContainer">
+        <div id="tableCSV">
+          <!-- Table will be populated by DynamicTable component -->
+        </div>
+      </div>
+
+      <div style="grid-column: 1 / -1;">
+        <h3>Timeline</h3>
+        <div class="timeline-wrapper" id="timelineWrapper">
+          <div class="timeline-bar"></div>
+          <div class="timeline-progress" id="timelineProgress"></div>
+          <div class="timeline-steps" id="timelineSteps">
+            <div class="timeline-step" data-step="1">
+              <div class="dot"></div>
+              <span class="label">Eligibility Check</span>
+            </div>
+            <div class="timeline-step" data-step="2">
+              <div class="dot"></div>
+              <span class="label">Start ECA</span>
+            </div>
+            <div class="timeline-step" data-step="3">
+              <div class="dot"></div>
+              <span class="label">ITA & PR</span>
+            </div>
+            <div class="timeline-step" data-step="4">
+              <div class="dot"></div>
+              <span class="label">End Date</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    </div>
+  </main>
 
+  <div class="widgets-container" id="widgetsContainer"></div>
 
-</main>
-
-
-
-<div class="widgets-container" id="widgetsContainer"></div>
-
-<!-- Widget Library Modal -->
-<div class="widget-library" id="widgetLibrary">
-  <div class="widget-library-content">
-    <div class="widget-library-header">
-      <h2>Add Widget</h2>
-      <button class="close-library" onclick="closeWidgetLibrary()">×</button>
-    </div>
-    <div class="widget-grid">
-      <div class="widget-option" onclick="addWidget('clock')">
-        <i class="bi bi-clock"></i>
-        <p>Clock</p>
+  <!-- Widget Library Modal -->
+  <div class="widget-library" id="widgetLibrary">
+    <div class="widget-library-content">
+      <div class="widget-library-header">
+        <h2>Add Widget</h2>
+        <button class="close-library" onclick="closeWidgetLibrary()">×</button>
       </div>
-      <div class="widget-option" onclick="addWidget('todo')">
-        <i class="bi bi-check2-square"></i>
-        <p>Todo List</p>
-      </div>
-      <div class="widget-option" onclick="addWidget('counter')">
-        <i class="bi bi-123"></i>
-        <p>Counter</p>
-      </div>
-      <div class="widget-option" onclick="addWidget('progress')">
-        <i class="bi bi-bar-chart"></i>
-        <p>Progress</p>
-      </div>
-      <div class="widget-option" onclick="addWidget('notes')">
-        <i class="bi bi-journal-text"></i>
-        <p>Notes</p>
-      </div>
-      <div class="widget-option" onclick="addWidget('stats')">
-        <i class="bi bi-graph-up-arrow"></i>
-        <p>Stats</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Detailed Data Modal -->
-<div class="data-modal" id="dataModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="modalMonth">Month Details</h3>
-      <button class="close-modal" onclick="closeDataModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="data-table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Reason</th>
-              <th>Value (Eur)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="dataTableBody">
-            <!-- Data will be populated here -->
-          </tbody>
-        </table>
-        <div class="add-data-form">
-          <input type="text" id="reasonInput" placeholder="Enter reason" class="reason-input">
-          <input type="number" id="valueInput" placeholder="Value in Eur" class="value-input">
-          <button onclick="addDataRow()" class="add-data-btn">Add Entry</button>
+      <div class="widget-grid">
+        <div class="widget-option" onclick="addWidget('clock')">
+          <i class="bi bi-clock"></i>
+          <p>Clock</p>
         </div>
-        <div class="modal-footer">
-          <button onclick="saveMonthData()" class="save-btn">Save & Close</button>
-          <button onclick="closeDataModal()" class="cancel-btn">Cancel</button>
+        <div class="widget-option" onclick="addWidget('todo')">
+          <i class="bi bi-check2-square"></i>
+          <p>Todo List</p>
+        </div>
+        <div class="widget-option" onclick="addWidget('counter')">
+          <i class="bi bi-123"></i>
+          <p>Counter</p>
+        </div>
+        <div class="widget-option" onclick="addWidget('progress')">
+          <i class="bi bi-bar-chart"></i>
+          <p>Progress</p>
+        </div>
+        <div class="widget-option" onclick="addWidget('notes')">
+          <i class="bi bi-journal-text"></i>
+          <p>Notes</p>
+        </div>
+        <div class="widget-option" onclick="addWidget('stats')">
+          <i class="bi bi-graph-up-arrow"></i>
+          <p>Stats</p>
         </div>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- Detailed Data Modal -->
+  <div class="data-modal" id="dataModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalMonth">Month Details</h3>
+        <button class="close-modal" onclick="closeDataModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Reason</th>
+                <th>Value (Eur)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody">
+              <!-- Data will be populated here -->
+            </tbody>
+          </table>
+          <div class="add-data-form">
+            <input type="text" id="reasonInput" placeholder="Enter reason" class="reason-input">
+            <input type="number" id="valueInput" placeholder="Value in Eur" class="value-input">
+            <button onclick="addDataRow()" class="add-data-btn">Add Entry</button>
+          </div>
+          <div class="modal-footer">
+            <button onclick="saveMonthData()" class="save-btn">Save & Close</button>
+            <button onclick="closeDataModal()" class="cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-
-<script src="WebDashboard.js"></script>
+  <!-- Save the JavaScript code as WebDashboard.js -->
+  <script src="WebDashboard.js"></script>
 </body>
 </html>
-
-
-
-
