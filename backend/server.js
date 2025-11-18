@@ -1,58 +1,79 @@
-// Dependencies
-import http from 'http';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { Octokit } from "@octokit/rest";
 
-// Configuration
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const PORT = process.env.PORT || 3000;
+/* -------------------------------------------------------------
+   Dependencies
+   --------------------------------------------------------- */
+  import http from 'http';
+  import fs from 'fs/promises'; 
+  import path from 'path';
+  import { fileURLToPath } from 'url';
+  import { Octokit } from "@octokit/rest";
+  import fsSync from 'fs';
+  import 'dotenv/config'; // automatically loads .env
 
-console.log(`🔧 Starting server with PORT: ${PORT}`);
-console.log(`🔧 Current directory: ${__dirname}`);
+/* -------------------------------------------------------------
+   Configuration: locate the CSV files and server settings
+   --------------------------------------------------------- */
 
-const CSV_FILES = {
-  data: path.join(__dirname, 'DocumentTraker.csv'),
-  chart: path.join(__dirname, 'savings_data.csv'),
-  bar: path.join(__dirname, 'cost_data.csv')
-};
+  //Configuration details
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const PORT = process.env.PORT || 3000;
+  
+  // log configuration details
+  console.log(`🔧 srever full path: ${__filename} `);
+  console.log(`🔧 server directory: ${__dirname}`);
+  console.log(`🔧 Environment PORT: ${PORT}`);
 
-// Log the CSV file paths
-console.log("📁 CSV File Paths:");
-Object.entries(CSV_FILES).forEach(([key, filePath]) => {
-  console.log(`   ${key}: ${filePath}`);
-});
+  // CSV File Paths
+  const CSV_FILES = {
+    data: path.join(__dirname, 'DocumentTraker.csv'),
+    chart: path.join(__dirname, 'savings_data.csv'),
+    bar: path.join(__dirname, 'cost_data.csv')
+  };
 
-// GitHub Configuration
-const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
-console.log(`🔑 GitHub Token present: ${!!GITHUB_TOKEN}`);
-console.log(`🔑 GitHub Token length: ${GITHUB_TOKEN ? GITHUB_TOKEN.length : 0}`);
+  // Log the CSV file paths
+  console.log("📁 CSV File Paths:");
+  Object.entries(CSV_FILES).forEach(([key, filePath]) => {
+    const filePresentBool = (fsSync.existsSync(filePath)) ? '✅' : '❌'; 
+    console.log(`   ${key}: ${filePath} ${filePresentBool}`);
+  });
 
-const GITHUB_CONFIG = {
-  owner: 'AhmadSidaoui',
-  repo: 'ahmadsidaoui.github.io'
-};
+/* -------------------------------------------------------------
+   Configuration: Github Access Token and Repository
+   --------------------------------------------------------- */
+    
+  // GitHub Configuration
+  const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
+  console.log(`🔑 GitHub Token present: ${!!GITHUB_TOKEN}`);
 
-console.log(`🔧 GitHub Config:`, GITHUB_CONFIG);
+  const GITHUB_CONFIG = {
+    owner: 'AhmadSidaoui',
+    repo: 'ahmadsidaoui.github.io'
+  };
 
-if (!GITHUB_TOKEN) {
-  console.error("❌ GitHub token not found!");
-  console.error("❌ Please set GITHUB_ACCESSTOKEN environment variable");
-  process.exit(1);
-}
+  console.log(`🔧 GitHub Config:`, GITHUB_CONFIG);
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
-console.log("✅ Octokit initialized");
+  if (!GITHUB_TOKEN) {
+    console.error("❌ GitHub token not found!");
+    console.error("❌ Please set GITHUB_ACCESSTOKEN environment variable");
+    process.exit(1);
+  }
 
-/////////////////////////////////////////////////////////////
-// CSV Manager Class
-/////////////////////////////////////////////////////////////
+  const octokit = new Octokit({ auth: GITHUB_TOKEN });
+  console.log("✅ Octokit initialized");
 
-// Utility Functions
+
+
+
+
+  
+/* -------------------------------------------------------------
+   Utilities: CSV Manager Class
+   --------------------------------------------------------- */
+
 class CSVManager {
-  // Read CSV file and return data as array of objects
+
+
   static async readCSV(filePath) {
     console.log(`📖 Attempting to read CSV: ${filePath}`);
     
@@ -63,11 +84,9 @@ class CSVManager {
       
       // Read file content
       const content = await fs.readFile(filePath, 'utf8');
-      console.log(`✅ Read ${content.length} characters from CSV`);
       
       // Parse CSV content to array of objects
       const lines = content.trim().split('\n');
-      console.log(`📊 Found ${lines.length} lines in CSV`);
       
       if (lines.length === 0) {
         console.log(`ℹ️ CSV file is empty: ${filePath}`);
@@ -91,6 +110,7 @@ class CSVManager {
       
       console.log(`✅ Successfully parsed ${data.length} rows from CSV`);
       return data;
+
     } catch (error) {
       if (error.code === 'ENOENT') {
         console.log(`❌ CSV file not found: ${filePath}`);
@@ -101,9 +121,10 @@ class CSVManager {
     }
   }
 
+
   static async writeCSV(filePath, newData) {
     console.log(`📝 Writing CSV: ${filePath} with ${newData ? newData.length : 0} rows`);
-    
+  
     if (!newData || newData.length === 0) {
       console.log(`ℹ️ No data to write, creating empty file`);
       await fs.writeFile(filePath, '');
@@ -120,35 +141,37 @@ class CSVManager {
     console.log(`✅ Successfully wrote ${csvContent.length} characters to CSV`);
   }
 
+
   static async appendCSV(filePath, newData) {
     console.log(`📝 Appending ${newData.length} rows to CSV: ${filePath}`);
     const existingData = await this.readCSV(filePath);
-    console.log(`📊 Existing data: ${existingData.length} rows`);
     
     const mergedData = [...existingData, ...newData];
-    console.log(`📊 Merged data: ${mergedData.length} rows total`);
     
     await this.writeCSV(filePath, mergedData);
   }
+
 }
 
-/////////////////////////////////////////////////////////////
-// GitHub Service Class
-/////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+/* -------------------------------------------------------------
+   Github Service: GitHub Service Class
+   --------------------------------------------------------- */
 
 class GitHubService {
+
   static async commitFile(filePath, commitMessage) {
     console.log(`🔗 Starting GitHub commit for: ${filePath}`);
     
     try {
-      // Check if file exists locally
-      try {
-        await fs.access(filePath);
-        console.log(`✅ Local file exists: ${filePath}`);
-      } catch (error) {
-        console.error(`❌ Local file not found: ${filePath}`);
-        return false;
-      }
 
       const fileContent = await fs.readFile(filePath, 'utf8');
       const contentBase64 = Buffer.from(fileContent).toString('base64');
@@ -168,7 +191,6 @@ class GitHubService {
         sha = undefined; // File doesn't exist on GitHub
       }
 
-      console.log(`🚀 Creating/updating file on GitHub...`);
       await octokit.repos.createOrUpdateFileContents({
         ...GITHUB_CONFIG,
         path: path.basename(filePath),
@@ -187,17 +209,27 @@ class GitHubService {
   }
 }
 
-/////////////////////////////////////////////////////////////
-// Request Handler Class
-/////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+/* -------------------------------------------------------------
+   Handler: Handler Class
+   --------------------------------------------------------- */
 
 // Request Handler with Router Pattern
 class RequestHandler {
   static async handleRequest(req, res) {
     console.log(`\n🌐 NEW REQUEST ==================================`);
-    console.log(`📨 Request URL: ${req.url}`);
-    console.log(`📨 Request Method: ${req.method}`);
-    console.log(`📨 Request Headers:`, req.headers);
+
 
     const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
     const pathname = parsedUrl.pathname;
@@ -221,17 +253,16 @@ class RequestHandler {
     console.log(`🛣️ Route: ${method} ${pathname}`);
 
     try {
-      // Route handling - FIXED: Use separate handler methods
       const routes = {
-        'GET:/api/data': () => this.handleGetData(req, res),
-        'GET:/api/chart/data': () => this.handleGetChartData(req, res),
-        'GET:/api/bar/data': () => this.handleGetBarData(req, res),
+        'GET:/api/data': () => this.handleGetData(CSV_FILES.data, res),
+        'GET:/api/chart/data': () => this.handleGetData(CSV_FILES.chart, res),
+        'GET:/api/bar/data': () => this.handleGetData(CSV_FILES.bar, res),
         'POST:/api/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
-        'POST:/api/chart/save': () => this.handlePostChart(req, res),
+        'POST:/api/chart/save': () => this.handlePostCSV(req, res, CSV_FILES.chart),
+        'POST:/api/bar/save': () => this.handlePostCSV(req, res, CSV_FILES.bar),
       };
 
       const routeKey = `${method}:${pathname}`;
-      console.log(`🔍 Looking for route: ${routeKey}`);
       
       const routeHandler = routes[routeKey];
       if (routeHandler) {
@@ -249,11 +280,14 @@ class RequestHandler {
     console.log(`✅ REQUEST COMPLETED =============================\n`);
   }
 
+
+
+
+
   // Separate handler methods for each route
-  static async handleGetData(req, res) {
+  static async handleGetData(path, res) {
     try {
-      console.log("📊 Handling GET /api/data");
-      const data = await CSVManager.readCSV(CSV_FILES.data);
+      const data = await CSVManager.readCSV(path);
       console.log(`✅ Sending ${data.length} rows of data`);
       this.sendJson(res, 200, { success: true, data });
     } catch (error) {
@@ -262,32 +296,10 @@ class RequestHandler {
     }
   }
 
-  static async handleGetChartData(req, res) {
-    try {
-      console.log("📈 Handling GET /api/chart/data");
-      const data = await CSVManager.readCSV(CSV_FILES.chart);
-      console.log(`✅ Sending ${data.length} rows of chart data`);
-      this.sendJson(res, 200, { success: true, data });
-    } catch (error) {
-      console.error(`❌ Error in handleGetChartData:`, error);
-      this.sendError(res, 500, `Failed to read chart CSV: ${error.message}`);
-    }
-  }
 
-  static async handleGetBarData(req, res) {
-    try {
-      console.log("📊 Handling GET /api/bar/data");
-      const data = await CSVManager.readCSV(CSV_FILES.bar);
-      console.log(`✅ Sending ${data.length} rows of bar data`);
-      this.sendJson(res, 200, { success: true, data });
-    } catch (error) {
-      console.error(`❌ Error in handleGetBarData:`, error);
-      this.sendError(res, 500, `Failed to read bar CSV: ${error.message}`);
-    }
-  }
+
 
   static async handlePostCSV(req, res, filePath) {
-    console.log(`💾 Handling POST CSV request for: ${filePath}`);
     
     try {
       const body = await this.parseRequestBody(req);
@@ -300,49 +312,32 @@ class RequestHandler {
         throw new Error('Data must be an array');
       }
 
-      console.log(`✅ Data validation passed, ${data.length} rows to append`);
-      
       await CSVManager.appendCSV(filePath, data);
-      console.log(`✅ Data appended to CSV`);
       
       await GitHubService.commitFile(filePath, `Update ${path.basename(filePath)} via server`);
-      console.log(`✅ GitHub commit completed`);
       
       this.sendJson(res, 200, { success: true, message: 'Data saved successfully' });
+
     } catch (error) {
       console.error(`❌ Error in handlePostCSV:`, error);
       this.sendError(res, 500, `Failed to save data: ${error.message}`);
     }
   }
 
-  static async handlePostChart(req, res) {
-    console.log(`📈 Handling POST Chart request`);
-    
-    try {
-      const body = await this.parseRequestBody(req);
-      console.log(`📨 Received chart data request body:`, body);
-      
-      const { csvData } = body;
 
-      if (typeof csvData !== 'string') {
-        console.error(`❌ Invalid csvData format, expected string, got:`, typeof csvData);
-        throw new Error('csvData must be a string');
-      }
 
-      console.log(`✅ Chart data validation passed, ${csvData.length} chars to write`);
-      
-      await fs.writeFile(CSV_FILES.chart, csvData, 'utf8');
-      console.log(`✅ Chart data written to file`);
-      
-      await GitHubService.commitFile(CSV_FILES.chart, 'Update chart data via server');
-      console.log(`✅ GitHub commit for chart completed`);
-      
-      this.sendJson(res, 200, { success: true, message: 'Chart data saved successfully' });
-    } catch (error) {
-      console.error(`❌ Error in handlePostChart:`, error);
-      this.sendError(res, 500, `Failed to save chart data: ${error.message}`);
-    }
-  }
+
+
+
+
+
+
+
+
+
+
+
+
 
   static async handleStaticFiles(req, res, pathname) {
     console.log(`📁 Handling static file request for: ${pathname}`);
@@ -378,6 +373,15 @@ class RequestHandler {
       this.sendError(res, 404, 'Not found');
     }
   }
+
+
+
+
+
+
+
+
+
   
   static async parseRequestBody(req) {
     console.log(`📨 Parsing request body...`);
@@ -406,16 +410,30 @@ class RequestHandler {
     });
   }
 
+
+
+
+
+
   static sendJson(res, statusCode, data) {
     console.log(`📤 Sending JSON response - Status: ${statusCode}, Data:`, data);
     res.writeHead(statusCode, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   }
 
+
+
+
+
+
+
   static sendError(res, statusCode, message) {
     console.error(`🚨 Sending error response - Status: ${statusCode}, Message: ${message}`);
     this.sendJson(res, statusCode, { success: false, error: message });
   }
+
+
+
 
   static getContentType(filename) {
     const ext = path.extname(filename);
@@ -430,6 +448,18 @@ class RequestHandler {
     return contentType;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Server Initialization
 async function initializeServer() {
@@ -473,6 +503,7 @@ async function initializeServer() {
     console.log(`   - http://localhost:${PORT}/api/chart/data`);
     console.log(`   - http://localhost:${PORT}/api/bar/data`);
     console.log(`   - http://localhost:${PORT}/`);
+    console.log(`   - http://localhost:${PORT}/api/save`);
   });
 
   server.on('error', (error) => {
