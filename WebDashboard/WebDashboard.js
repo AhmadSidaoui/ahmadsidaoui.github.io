@@ -1,190 +1,125 @@
-// Global variables for data management
-let monthlyData = {};
-let currentEditingMonth = null;
-let chart;
-
 // Backend API URL
-// const API_BASE_URL = 'http://localhost:3000/api';
 const API_BASE_URL = 'https://ahmadsidaoui-github-io.onrender.com/api';
 
-
-
-// Load data from CSV file via backend API
-async function loadCSVData1() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/chart/data`);
-        const result = await response.json();
-        
-        if (result.success) {
-            processCSVData(result.data);
-            initializeChart();
-            updateSavingsDisplay();
-        } else {
-            throw new Error(result.error || 'Failed to load CSV data');
+// Base class for API communication
+class APIService {
+    static async get(endpoint) {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (error) {
-        console.warn('Error loading data:', error.message);
-        // Initialize with empty data structure
-        monthlyData = {};
-        initializeChart();
-        updateSavingsDisplay();
         
-        // Show error to user
-        if (error.message.includes('Failed to fetch')) {
-            alert('Cannot connect to server. Make sure server.js is running on port 3000.');
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Expected JSON but got: ${text.substring(0, 100)}`);
         }
+        
+        return await response.json();
     }
-}
 
-// Process CSV data and convert to monthlyData format
-function processCSVData(dataArray) {
-    monthlyData = {};
-
-    dataArray.forEach(item => {
-        const month = item.Month?.trim();          // e.g., "Dec"
-        const year = item.Year?.trim();          // year is actually in Reason
-        const key = `${month} ${year}`;            // month + year key
-        const reason = item.Reason;
-
-        // The actual value is in Value\r, but currently it's "sal" as a placeholder
-        // If you eventually have numeric values, parse them here
-        const valueRaw = item['Value\r'] ?? item.Value ?? 0;
-        const value = Number(String(valueRaw).trim()) || 0; // fallback to 0 if NaN
-
-        if (!monthlyData[key]) monthlyData[key] = [];
-        monthlyData[key].push({ reason: reason , value }); // reason can be hardcoded if not in CSV
-    });
-
-    console.log("Processed monthlyData:", monthlyData);
-}
-
-const monthOrder = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
-
-function getSortedMonths() {
-    return Object.keys(monthlyData).sort((a,b) => {
-        const [monthA, yearA] = a.split(' ');
-        const [monthB, yearB] = b.split(' ');
-        if (Number(yearA) !== Number(yearB)) return Number(yearA) - Number(yearB);
-        return monthOrder[monthA] - monthOrder[monthB];
-    });
-}
-
-
-
-// Save data back to CSV file via backend API
-async function saveToCSV() {
-    const csvLines = [];
-    
-    // Add header
-    csvLines.push('Month,Year,Reason,Value');
-    
-    // Month order map for proper sorting
-    const monthOrder = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
-    
-    // Sort months chronologically by year and month
-    const sortedKeys = Object.keys(monthlyData).sort((a, b) => {
-        const [monthA, yearA] = a.split(' ');
-        const [monthB, yearB] = b.split(' ');
-        if (Number(yearA) !== Number(yearB)) return Number(yearA) - Number(yearB);
-        return monthOrder[monthA] - monthOrder[monthB];
-    });
-    
-    // Add data rows
-    sortedKeys.forEach(key => {
-        const [month, year] = key.split(' ');
-        monthlyData[key].forEach(entry => {
-            csvLines.push(`${month},${year},${entry.reason},${entry.value}`);
-        });
-    });
-    
-    const csvContent = csvLines.join('\n');
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/chart/save`, {
+    static async post(endpoint, data) {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ csvData: csvContent })
+            body: JSON.stringify(data)
         });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to save data');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
-        console.log('Data saved successfully to CSV file');
-    } catch (error) {
-        console.error('Error saving data:', error);
-        alert('Error saving data to server: ' + error.message);
+
+        return await response.json();
     }
 }
 
-
-// The rest of your existing functions remain the same...
-function initializeChart() {
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const sortedMonths = getSortedMonths();
-    if (chart) {
-        chart.destroy();
+// Base class for data visualization components
+class DataVisualization {
+    constructor(containerId, config = {}) {
+        this.container = document.getElementById(containerId);
+        this.config = config;
+        this.chart = null;
     }
 
+    destroy() {
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = null;
+        }
+    }
 
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: sortedMonths,
-            datasets: [{
-                label: 'Cumulative Savings',
-                data: calculateMonthlyTotals(),
-                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
-                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-light'),
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2,
-                pointRadius: 6,
-                pointHoverRadius: 8,
-            }]
-        },
-        options: {
+    updateTheme() {
+        if (this.chart) {
+            this.chart.update();
+        }
+    }
+}
+
+// Chart component for savings visualization
+class SavingsChart extends DataVisualization {
+    constructor(containerId, dataManager) {
+        super(containerId);
+        this.dataManager = dataManager;
+        this.monthOrder = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+    }
+
+    initialize() {
+        const ctx = this.container.getContext('2d');
+        
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: this.getSortedMonths(),
+                datasets: [{
+                    label: 'Cumulative Savings',
+                    data: this.calculateMonthlyTotals(),
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-light'),
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                }]
+            },
+            options: this.getChartOptions()
+        });
+    }
+
+    getChartOptions() {
+        return {
             responsive: true,
             scales: {
                 y: { 
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Cumulative Amount (Eur)'
-                    }
+                    title: { display: true, text: 'Cumulative Amount (Eur)' }
                 },
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Months'
-                    }
+                    title: { display: true, text: 'Months' }
                 }
             },
             onClick: (event, elements) => {
                 if (elements.length > 0) {
-                    const elementIndex = elements[0].index;
-                    const month = chart.data.labels[elementIndex];
-                    openDataModal(month);
+                    const month = this.chart.data.labels[elements[0].index];
+                    this.dataManager.openMonthModal(month);
                 }
             },
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: (context) => {
                             const month = context.label;
                             const cumulativeTotal = context.parsed.y;
-                            const currentMonthTotal = calculateCurrentMonthTotal(month);
+                            const currentMonthTotal = this.dataManager.calculateCurrentMonthTotal(month);
                             return `Cumulative: ${cumulativeTotal} Eur | This Month: ${currentMonthTotal} Eur`;
                         },
-                        afterLabel: function(context) {
+                        afterLabel: (context) => {
                             const month = context.label;
-                            const details = monthlyData[month];
+                            const details = this.dataManager.getMonthData(month);
                             if (details && details.length > 0) {
                                 return ['Breakdown:'].concat(details.map(item => `  ${item.reason}: ${item.value} Eur`)).join('\n');
                             }
@@ -192,874 +127,964 @@ function initializeChart() {
                         }
                     }
                 },
-                legend: {
-                    display: false
+                legend: { display: false }
+            }
+        };
+    }
+
+    getSortedMonths() {
+        const months = Object.keys(this.dataManager.monthlyData || {});
+        return months.sort((a, b) => {
+            const [monthA, yearA] = a.split(' ');
+            const [monthB, yearB] = b.split(' ');
+            if (Number(yearA) !== Number(yearB)) return Number(yearA) - Number(yearB);
+            return this.monthOrder[monthA] - this.monthOrder[monthB];
+        });
+    }
+
+    calculateMonthlyTotals() {
+        const sortedMonths = this.getSortedMonths();
+        const monthlyTotals = sortedMonths.map(month => 
+            this.dataManager.calculateCurrentMonthTotal(month)
+        );
+        return this.calculateCumulativeTotals(monthlyTotals);
+    }
+
+    calculateCumulativeTotals(monthlyTotals) {
+        const cumulativeTotals = [];
+        let runningTotal = 0;
+        
+        monthlyTotals.forEach(total => {
+            runningTotal += total;
+            cumulativeTotals.push(runningTotal);
+        });
+        
+        return cumulativeTotals;
+    }
+
+    update() {
+        if (this.chart) {
+            this.chart.data.labels = this.getSortedMonths();
+            this.chart.data.datasets[0].data = this.calculateMonthlyTotals();
+            this.chart.update();
+        }
+    }
+
+    highlightPoint(month) {
+        const monthIndex = this.chart.data.labels.indexOf(month);
+        this.chart.data.datasets[0].pointBackgroundColor = this.chart.data.labels.map((label, index) => 
+            index === monthIndex ? getComputedStyle(document.documentElement).getPropertyValue('--accent-color') : getComputedStyle(document.documentElement).getPropertyValue('--accent-color')
+        );
+        this.chart.data.datasets[0].pointRadius = this.chart.data.labels.map((label, index) => 
+            index === monthIndex ? 8 : 6
+        );
+        this.chart.update();
+    }
+
+    removeHighlight() {
+        this.chart.data.datasets[0].pointBackgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+        this.chart.data.datasets[0].pointRadius = 6;
+        this.chart.update();
+    }
+}
+
+// Budget Chart component
+class BudgetChart extends DataVisualization {
+    constructor(containerId) {
+        super(containerId);
+    }
+
+    async initialize() {
+        try {
+            const result = await APIService.get('/bar/data');
+            if (result.success && Array.isArray(result.data)) {
+                this.render(result.data);
+            }
+        } catch (error) {
+            console.error('Error loading budget chart:', error);
+        }
+    }
+
+    render(data) {
+        const labels = data.map(item => item.Description);
+        const values = data.map(item => item.Cost);
+
+        if (window.budgetChartInstance) {
+            window.budgetChartInstance.destroy();
+        }
+
+        window.budgetChartInstance = new Chart(this.container, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cost (USD)',
+                    data: values,
+                    borderRadius: 10,
+                    backgroundColor: [
+                        'rgba(37, 99, 235, 0.9)',
+                        'rgba(59, 130, 246, 0.9)',
+                        'rgba(147, 197, 253, 0.9)'
+                    ],
+                    hoverBackgroundColor: [
+                        'rgba(37, 99, 235, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(147, 197, 253, 1)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#6b7280' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f0f6ff' },
+                        ticks: { color: '#6b7280', stepSize: 50 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(37,99,235,0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderWidth: 0,
+                        padding: 8
+                    }
                 }
             }
-        }
-    });
-}
-
-function initializeEventListeners() {
-    // Theme Switcher
-    const themeButtons = document.querySelectorAll('.theme-btn');
-    themeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const theme = btn.dataset.theme;
-            document.body.dataset.theme = theme;
-            themeButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            updateChartColors();
         });
-    });
+    }
+}
 
-    // Close modal on outside click
-    document.getElementById('dataModal').addEventListener('click', (e) => {
-        if (e.target.id === 'dataModal') {
-            closeDataModal();
+// Data Manager for savings data
+class SavingsDataManager {
+    constructor() {
+        this.monthlyData = {};
+        this.currentEditingMonth = null;
+    }
+
+    async loadData() {
+        try {
+            const result = await APIService.get('/chart/data');
+            if (result.success) {
+                this.processData(result.data);
+                return true;
+            }
+        } catch (error) {
+            console.warn('Error loading savings data:', error);
+            this.monthlyData = {};
         }
-    });
+        return false;
+    }
 
-    document.getElementById('widgetLibrary').addEventListener('click', (e) => {
-        if (e.target.id === 'widgetLibrary') {
-            closeWidgetLibrary();
+    processData(dataArray) {
+        this.monthlyData = {};
+
+        dataArray.forEach(item => {
+            const month = item.Month?.trim();
+            const year = item.Year?.trim();
+            const key = `${month} ${year}`;
+            const reason = item.Reason;
+            const valueRaw = item['Value\r'] ?? item.Value ?? 0;
+            const value = Number(String(valueRaw).trim()) || 0;
+
+            if (!this.monthlyData[key]) this.monthlyData[key] = [];
+            this.monthlyData[key].push({ reason, value });
+        });
+    }
+
+    async saveData() {
+        const csvLines = ['Month,Year,Reason,Value'];
+        const monthOrder = { Jan:1, Feb:2, Mar:3, Apr:4, May:5, Jun:6, Jul:7, Aug:8, Sep:9, Oct:10, Nov:11, Dec:12 };
+        
+        const sortedKeys = Object.keys(this.monthlyData).sort((a, b) => {
+            const [monthA, yearA] = a.split(' ');
+            const [monthB, yearB] = b.split(' ');
+            if (Number(yearA) !== Number(yearB)) return Number(yearA) - Number(yearB);
+            return monthOrder[monthA] - monthOrder[monthB];
+        });
+        
+        sortedKeys.forEach(key => {
+            const [month, year] = key.split(' ');
+            this.monthlyData[key].forEach(entry => {
+                csvLines.push(`${month},${year},${entry.reason},${entry.value}`);
+            });
+        });
+        
+        try {
+            await APIService.post('/chart/save', { data: csvLines.map(line => {
+                const [Month, Year, Reason, Value] = line.split(',');
+                return { Month, Year, Reason, Value };
+            }).slice(1) }); // Remove header
+        } catch (error) {
+            console.error('Error saving data:', error);
+            throw error;
         }
-    });
+    }
 
-    // Keyboard support
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && document.getElementById('dataModal').classList.contains('active')) {
-            closeDataModal();
+    calculateCurrentMonthTotal(month) {
+        return this.monthlyData[month] ? 
+            this.monthlyData[month].reduce((total, item) => total + item.value, 0) : 0;
+    }
+
+    calculateCumulativeTotalUpTo(month) {
+        const months = Object.keys(this.monthlyData).sort();
+        const targetIndex = months.indexOf(month);
+        let cumulativeTotal = 0;
+        
+        for (let i = 0; i <= targetIndex; i++) {
+            cumulativeTotal += this.calculateCurrentMonthTotal(months[i]);
         }
-    });
-}
-
-// Calculate cumulative monthly totals from detailed data
-function calculateMonthlyTotals() {
-    const sortedMonths = getSortedMonths(); // ensure proper month-year order
-    const monthlyTotals = sortedMonths.map(month => {
-        return monthlyData[month].reduce((total, item) => total + item.value, 0);
-    });
-
-    return calculateCumulativeTotals(monthlyTotals);
-}
-
-
-// Calculate cumulative totals (each month adds to previous)
-function calculateCumulativeTotals(monthlyTotals) {
-    const cumulativeTotals = [];
-    let runningTotal = 0;
-    
-    monthlyTotals.forEach(total => {
-        runningTotal += total;
-        cumulativeTotals.push(runningTotal);
-    });
-    
-    return cumulativeTotals;
-}
-
-// Calculate just the current month's total (non-cumulative)
-function calculateCurrentMonthTotal(month) {
-    return monthlyData[month] ? monthlyData[month].reduce((total, item) => total + item.value, 0) : 0;
-}
-
-// Calculate cumulative total up to a specific month
-function calculateCumulativeTotalUpTo(month) {
-    const months = Object.keys(monthlyData).sort();
-    const targetIndex = months.indexOf(month);
-    let cumulativeTotal = 0;
-    
-    for (let i = 0; i <= targetIndex; i++) {
-        cumulativeTotal += calculateCurrentMonthTotal(months[i]);
+        
+        return cumulativeTotal;
     }
-    
-    return cumulativeTotal;
-}
 
-// Open data modal
-function openDataModal(month) {
-    currentEditingMonth = month;
-    const currentMonthTotal = calculateCurrentMonthTotal(month);
-    const cumulativeTotal = calculateCumulativeTotalUpTo(month);
-    
-    document.getElementById('modalMonth').textContent = 
-        `${month} Details - This Month: ${currentMonthTotal} Eur | Cumulative: ${cumulativeTotal} Eur`;
-    
-    populateDataTable(month);
-    document.getElementById('dataModal').classList.add('active');
-    highlightChartPoint(month);
-}
-
-// Close data modal
-function closeDataModal() {
-    document.getElementById('dataModal').classList.remove('active');
-    currentEditingMonth = null;
-    clearInputs();
-    removeChartHighlight();
-}
-
-// Populate data table
-function populateDataTable(month) {
-    const tableBody = document.getElementById('dataTableBody');
-    tableBody.innerHTML = '';
-    
-    if (!monthlyData[month]) {
-        monthlyData[month] = [];
+    getMonthData(month) {
+        return this.monthlyData[month] || [];
     }
-    
-    monthlyData[month].forEach((item, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><input type="text" value="${item.reason}" onchange="updateDataField(${index}, 'reason', this.value)" class="reason-edit"></td>
-            <td><input type="number" value="${item.value}" onchange="updateDataField(${index}, 'value', parseInt(this.value))" class="value-edit"></td>
-            <td><button onclick="deleteDataRow(${index})" class="delete-row">Delete</button></td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
 
-// Add new data row
-function addDataRow() {
-    const reasonInput = document.getElementById('reasonInput');
-    const valueInput = document.getElementById('valueInput');
-    
-    const reason = reasonInput.value.trim();
-    const value = parseInt(valueInput.value);
-    
-    if (!reason || isNaN(value)) {
-        alert('Please enter both reason and value');
-        return;
+    addMonthEntry(month, reason, value) {
+        if (!this.monthlyData[month]) {
+            this.monthlyData[month] = [];
+        }
+        this.monthlyData[month].push({ reason, value });
     }
-    
-    if (!monthlyData[currentEditingMonth]) {
-        monthlyData[currentEditingMonth] = [];
+
+    updateMonthEntry(month, index, field, value) {
+        if (this.monthlyData[month] && this.monthlyData[month][index]) {
+            this.monthlyData[month][index][field] = value;
+        }
     }
-    
-    monthlyData[currentEditingMonth].push({ reason, value });
-    populateDataTable(currentEditingMonth);
-    clearInputs();
-    // saveToCSV();
+
+    deleteMonthEntry(month, index) {
+        if (this.monthlyData[month]) {
+            this.monthlyData[month].splice(index, 1);
+        }
+    }
 }
 
-// Delete data row
-function deleteDataRow(index) {
-    monthlyData[currentEditingMonth].splice(index, 1);
-    populateDataTable(currentEditingMonth);
-    saveToCSV();
-}
+// Modal Manager for data editing
+class ModalManager {
+    constructor(dataManager, chart) {
+        this.dataManager = dataManager;
+        this.chart = chart;
+        this.modal = document.getElementById('dataModal');
+        this.tableBody = document.getElementById('dataTableBody');
+        this.reasonInput = document.getElementById('reasonInput');
+        this.valueInput = document.getElementById('valueInput');
+        
+        this.initializeEventListeners();
+    }
 
-// Update data field
-function updateDataField(index, field, value) {
-    monthlyData[currentEditingMonth][index][field] = value;
-    saveToCSV();
-}
+    initializeEventListeners() {
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.close();
+            }
+        });
 
-// Clear input fields
-function clearInputs() {
-    document.getElementById('reasonInput').value = '';
-    document.getElementById('valueInput').value = '';
-}
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                this.close();
+            }
+        });
+    }
 
-// Save month data and update chart
-function saveMonthData() {
-    chart.data.labels = getSortedMonths();
-    chart.data.datasets[0].data = calculateMonthlyTotals();
-    chart.update();
-    updateSavingsDisplay();
-    saveToCSV();
-    closeDataModal();
-}
+    open(month) {
+        this.dataManager.currentEditingMonth = month;
+        const currentMonthTotal = this.dataManager.calculateCurrentMonthTotal(month);
+        const cumulativeTotal = this.dataManager.calculateCumulativeTotalUpTo(month);
+        
+        document.getElementById('modalMonth').textContent = 
+            `${month} Details - This Month: ${currentMonthTotal} Eur | Cumulative: ${cumulativeTotal} Eur`;
+        
+        this.populateTable(month);
+        this.modal.classList.add('active');
+        this.chart.highlightPoint(month);
+    }
 
-// Update the savings display cards
-function updateSavingsDisplay() {
-    const monthlyElement = document.getElementById('monthlySavings');
-    const currentElement = document.getElementById('currentSavings');
-    
-    if (monthlyElement && currentElement) {
-        const months = Object.keys(monthlyData).sort();
-        if (months.length === 0) {
-            monthlyElement.textContent = '0 Eur';
-            currentElement.textContent = '0 Eur';
+    close() {
+        this.modal.classList.remove('active');
+        this.dataManager.currentEditingMonth = null;
+        this.clearInputs();
+        this.chart.removeHighlight();
+    }
+
+    populateTable(month) {
+        this.tableBody.innerHTML = '';
+        const monthData = this.dataManager.getMonthData(month);
+
+        monthData.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" value="${item.reason}" onchange="app.savingsDataManager.updateMonthEntry('${month}', ${index}, 'reason', this.value)" class="reason-edit"></td>
+                <td><input type="number" value="${item.value}" onchange="app.savingsDataManager.updateMonthEntry('${month}', ${index}, 'value', parseInt(this.value))" class="value-edit"></td>
+                <td><button onclick="app.savingsDataManager.deleteMonthEntry('${month}', ${index})" class="delete-row">Delete</button></td>
+            `;
+            this.tableBody.appendChild(row);
+        });
+    }
+
+    addRow() {
+        const reason = this.reasonInput.value.trim();
+        const value = parseInt(this.valueInput.value);
+        
+        if (!reason || isNaN(value)) {
+            alert('Please enter both reason and value');
             return;
         }
         
-        const latestMonth = months[months.length - 1];
-        const monthlyVal = calculateCurrentMonthTotal(latestMonth);
-        const cumulativeTotals = calculateMonthlyTotals();
-        const currentVal = cumulativeTotals[cumulativeTotals.length - 1];
+        this.dataManager.addMonthEntry(this.dataManager.currentEditingMonth, reason, value);
+        this.populateTable(this.dataManager.currentEditingMonth);
+        this.clearInputs();
+    }
+
+    clearInputs() {
+        this.reasonInput.value = '';
+        this.valueInput.value = '';
+    }
+}
+
+// Generic Table Component
+class DynamicTable {
+    constructor(containerId, config = {}) {
+        this.container = document.getElementById(containerId);
+        this.config = {
+            apiEndpoint: config.apiEndpoint || '/data',
+            saveEndpoint: config.saveEndpoint || '/save',
+            actions: config.actions || ['toggle'],
+            columns: config.columns || [],
+            ...config
+        };
+        this.data = [];
+        this.hasUnsavedChanges = false;
         
-        monthlyElement.textContent = monthlyVal + ' Eur';
-        currentElement.textContent = currentVal + ' Eur';
+        this.initialize();
+    }
+
+    initialize() {
+        this.createTableStructure();
+        this.loadData();
+    }
+
+    createTableStructure() {
+        this.container.innerHTML = `
+            <div class="table-header">
+                <h3>${this.config.title || 'Data Table'}</h3>
+            </div>
+            <table>
+                <thead id="${this.config.containerId}-header"></thead>
+                <tbody id="${this.config.containerId}-body"></tbody>
+            </table>
+        `;
+        
+        this.tableHeader = document.getElementById(`${this.config.containerId}-header`);
+        this.tableBody = document.getElementById(`${this.config.containerId}-body`);
+        
+        if (this.config.actions.includes('click')) {
+            this.tableBody.addEventListener('click', (e) => this.handleRowClick(e));
+        }
+    }
+
+    async loadData() {
+        try {
+            const result = await APIService.get(this.config.apiEndpoint);
+            if (result.success) {
+                this.data = result.data;
+                this.render();
+            }
+        } catch (error) {
+            console.error('Error loading table data:', error);
+        }
+    }
+
+    render() {
+        this.renderHeader();
+        this.renderBody();
+    }
+
+    renderHeader() {
+        this.tableHeader.innerHTML = '';
+        const headerRow = document.createElement('tr');
+        
+        if (this.data.length > 0) {
+            Object.keys(this.data[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+        } else if (this.config.columns.length > 0) {
+            this.config.columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+        }
+        
+        if (this.config.actions.length > 0) {
+            const actionTh = document.createElement('th');
+            actionTh.textContent = 'Actions';
+            headerRow.appendChild(actionTh);
+        }
+        
+        this.tableHeader.appendChild(headerRow);
+    }
+
+    renderBody() {
+        this.tableBody.innerHTML = '';
+        
+        this.data.forEach((rowData, index) => {
+            const tr = document.createElement('tr');
+            
+            Object.values(rowData).forEach(value => {
+                const td = document.createElement('td');
+                td.textContent = value;
+                tr.appendChild(td);
+            });
+
+            this.applyRowStyling(tr, rowData);
+            
+            if (this.config.actions.length > 0) {
+                const actionTd = document.createElement('td');
+                this.config.actions.forEach(action => {
+                    actionTd.appendChild(this.createActionButton(action, index));
+                });
+                tr.appendChild(actionTd);
+            }
+            
+            this.tableBody.appendChild(tr);
+        });
+    }
+
+    applyRowStyling(tr, rowData) {
+        // Override this method in subclasses for custom styling
+        const secondCell = tr.cells[1];
+        if (secondCell && secondCell.textContent.trim().toLowerCase() === 'completed') {
+            tr.style.backgroundColor = 'lightgreen';
+            Array.from(tr.cells).forEach(cell => cell.style.fontWeight = 'bold');
+        }
+    }
+
+    createActionButton(action, index) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        
+        switch(action) {
+            case 'toggle':
+                button.textContent = 'Toggle';
+                button.className = 'table-action-btn';
+                button.onclick = (e) => this.toggleRow(e.target);
+                break;
+            case 'delete':
+                button.textContent = 'Delete';
+                button.className = 'delete-row';
+                button.onclick = () => this.deleteRow(index);
+                break;
+            default:
+                button.textContent = action;
+                button.className = 'table-action-btn';
+        }
+        
+        return button;
+    }
+
+    toggleRow(button) {
+        const row = button.closest('tr');
+        const secondCell = row.cells[1];
+
+        if (!secondCell) return;
+
+        const currentStatus = secondCell.textContent.trim().toLowerCase();
+        const newStatus = currentStatus === 'completed' ? 'Pending' : 'Completed';
+
+        secondCell.textContent = newStatus;
+        
+        if (newStatus === 'Completed') {
+            row.style.backgroundColor = 'lightgreen';
+            Array.from(row.cells).forEach(cell => cell.style.fontWeight = 'bold');
+        } else {
+            row.style.backgroundColor = '';
+            Array.from(row.cells).forEach(cell => cell.style.fontWeight = 'normal');
+        }
+
+        this.hasUnsavedChanges = true;
+        this.saveChanges();
+    }
+
+    async saveChanges() {
+        try {
+            const headers = Array.from(this.tableHeader.querySelectorAll('th'))
+                .map(th => th.textContent)
+                .filter(header => header !== 'Actions');
+
+            const data = Array.from(this.tableBody.querySelectorAll('tr')).map(row => {
+                const rowData = {};
+                const cells = row.querySelectorAll('td');
+                
+                cells.forEach((cell, index) => {
+                    if (index < headers.length) {
+                        rowData[headers[index]] = cell.textContent.trim();
+                    }
+                });
+                
+                return rowData;
+            }).filter(row => Object.keys(row).length > 0);
+
+            await APIService.post(this.config.saveEndpoint, { data });
+            this.hasUnsavedChanges = false;
+        } catch (error) {
+            console.error('Error saving table data:', error);
+        }
+    }
+
+    deleteRow(index) {
+        this.data.splice(index, 1);
+        this.render();
+        this.saveChanges();
+    }
+
+    handleRowClick(event) {
+        // Override for custom click handling
     }
 }
 
-// Update chart colors when theme changes
-function updateChartColors() {
-    if (chart) {
-        chart.data.datasets[0].borderColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
-        chart.data.datasets[0].backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-light');
-        chart.data.datasets[0].pointBackgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
-        chart.update();
+// Document Tracker Table (specialized table)
+class DocumentTrackerTable extends DynamicTable {
+    constructor(containerId) {
+        super(containerId, {
+            containerId: 'documentTracker',
+            apiEndpoint: '/data',
+            saveEndpoint: '/save',
+            actions: ['toggle'],
+            title: 'Document Tracker'
+        });
     }
 }
 
-// Highlight chart point
-function highlightChartPoint(month) {
-    const monthIndex = chart.data.labels.indexOf(month);
-    chart.data.datasets[0].pointBackgroundColor = chart.data.labels.map((label, index) => 
-        index === monthIndex ? getComputedStyle(document.documentElement).getPropertyValue('--accent-color') : getComputedStyle(document.documentElement).getPropertyValue('--accent-color')
-    );
-    chart.data.datasets[0].pointRadius = chart.data.labels.map((label, index) => 
-        index === monthIndex ? 8 : 6
-    );
-    chart.update();
-}
-
-// Remove chart highlight
-function removeChartHighlight() {
-    chart.data.datasets[0].pointBackgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
-    chart.data.datasets[0].pointRadius = 6;
-    chart.update();
-}
-
-// Real-time updates simulation
-function updateSavings() {
-    const monthlyElement = document.getElementById('monthlySavings');
-    const currentElement = document.getElementById('currentSavings');
-    
-        monthlyElement.textContent = `1300` + ' Eur';
-        currentElement.textContent = `0` + ' Eur';
-}
-
-// Update every 5 seconds
-setInterval(updateSavings, 5000);
-
-// Widget Library Functions (keep your existing widget functions)
-function openWidgetLibrary() {
-    document.getElementById('widgetLibrary').classList.add('active');
-}
-
-function closeWidgetLibrary() {
-    document.getElementById('widgetLibrary').classList.remove('active');
-}
-
-function deleteWidget(btn) {
-    const widget = btn.closest('.card, .chart-section, .clock-widget, .todo-widget, .table-section');
-    widget.style.opacity = '0';
-    widget.style.transform = 'scale(0.8)';
-    setTimeout(() => widget.remove(), 300);
-}
-
-function addWidget(type) {
-    const container = document.getElementById('widgetsContainer');
-    let widgetHTML = '';
-    
-    switch(type) {
-        case 'clock':
-            widgetHTML = `
-                <div class="card clock-widget">
-                    <button class="delete-widget" onclick="deleteWidget(this)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <h2 class="clock-time" id="clockTime">00:00:00</h2>
-                    <p class="clock-date" id="clockDate">Monday, January 1, 2024</p>
-                </div>
-            `;
-            break;
-        case 'todo':
-            widgetHTML = `
-                <div class="card todo-widget">
-                    <button class="delete-widget" onclick="deleteWidget(this)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <h3><i class="bi bi-check2-square"></i> Todo List</h3>
-                    <div class="todo-input-container">
-                        <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') addTodo(this)">
-                        <button class="todo-add-btn" onclick="addTodo(this.previousElementSibling)">
-                            <i class="bi bi-plus"></i>
-                        </button>
-                    </div>
-                    <ul class="todo-list"></ul>
-                </div>
-            `;
-            break;
-        case 'counter':
-            widgetHTML = `
-                <div class="card">
-                    <button class="delete-widget" onclick="deleteWidget(this)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <i class="bi bi-123"></i>
-                    <h3 class="counter-value">0</h3>
-                    <p>Counter</p>
-                    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
-                        <button onclick="updateCounter(this, -1)" style="background: var(--accent-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">-</button>
-                        <button onclick="updateCounter(this, 1)" style="background: var(--accent-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">+</button>
-                    </div>
-                </div>
-            `;
-            break;
-        case 'progress':
-            widgetHTML = `
-                <div class="card">
-                    <button class="delete-widget" onclick="deleteWidget(this)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <i class="bi bi-bar-chart"></i>
-                    <h3>75%</h3>
-                    <p>Goal Progress</p>
-                    <div style="background: var(--bg-primary); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 1rem;">
-                        <div style="background: var(--accent-color); height: 100%; width: 75%; transition: width 0.5s;"></div>
-                    </div>
-                </div>
-            `;
-            break;
-        case 'notes':
-            widgetHTML = `
-                <div class="card" style="text-align: left;">
-                    <button class="delete-widget" onclick="deleteWidget(this)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <h3><i class="bi bi-journal-text"></i> Quick Notes</h3>
-                    <textarea style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid var(--accent-light); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; resize: vertical;" placeholder="Write your notes here..."></textarea>
-                </div>
-            `;
-            break;
-        case 'stats':
-            widgetHTML = `
-                <div class="card">
-                    <button class="delete-widget" onclick="deleteWidget(this)">
-                        <i class="bi bi-x"></i>
-                    </button>
-                    <i class="bi bi-graph-up-arrow"></i>
-                    <h3 id="randomStat">${Math.floor(Math.random() * 1000)}</h3>
-                    <p>Random Stat</p>
-                </div>
-            `;
-            break;
+// Widget Manager
+class WidgetManager {
+    constructor() {
+        this.widgetsContainer = document.getElementById('widgetsContainer');
+        this.initializeEventListeners();
     }
-    
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = widgetHTML;
-    const widget = tempDiv.firstElementChild;
-    widget.style.opacity = '0';
-    widget.style.transform = 'scale(0.8)';
-    
-    container.appendChild(widget);
-    
-    setTimeout(() => {
-        widget.style.opacity = '1';
-        widget.style.transform = 'scale(1)';
-    }, 10);
-    
-    if (type === 'clock') {
+
+    initializeEventListeners() {
+        document.getElementById('widgetLibrary').addEventListener('click', (e) => {
+            if (e.target.id === 'widgetLibrary') {
+                this.closeLibrary();
+            }
+        });
+    }
+
+    openLibrary() {
+        document.getElementById('widgetLibrary').classList.add('active');
+    }
+
+    closeLibrary() {
+        document.getElementById('widgetLibrary').classList.remove('active');
+    }
+
+    deleteWidget(btn) {
+        const widget = btn.closest('.card, .chart-section, .clock-widget, .todo-widget, .table-section');
+        widget.style.opacity = '0';
+        widget.style.transform = 'scale(0.8)';
+        setTimeout(() => widget.remove(), 300);
+    }
+
+    addWidget(type) {
+        let widgetHTML = '';
+        
+        switch(type) {
+            case 'clock':
+                widgetHTML = this.createClockWidget();
+                break;
+            case 'todo':
+                widgetHTML = this.createTodoWidget();
+                break;
+            case 'counter':
+                widgetHTML = this.createCounterWidget();
+                break;
+            case 'progress':
+                widgetHTML = this.createProgressWidget();
+                break;
+            case 'notes':
+                widgetHTML = this.createNotesWidget();
+                break;
+            case 'stats':
+                widgetHTML = this.createStatsWidget();
+                break;
+        }
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = widgetHTML;
+        const widget = tempDiv.firstElementChild;
+        
+        this.animateWidgetInsertion(widget);
+        this.widgetsContainer.appendChild(widget);
+        
+        if (type === 'clock') {
+            this.initializeClockWidget(widget);
+        }
+        
+        this.closeLibrary();
+    }
+
+    createClockWidget() {
+        return `
+            <div class="card clock-widget">
+                <button class="delete-widget" onclick="app.widgetManager.deleteWidget(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <h2 class="clock-time">00:00:00</h2>
+                <p class="clock-date">Monday, January 1, 2024</p>
+            </div>
+        `;
+    }
+
+    createTodoWidget() {
+        return `
+            <div class="card todo-widget">
+                <button class="delete-widget" onclick="app.widgetManager.deleteWidget(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+                <div class="todo-input-container">
+                    <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') app.widgetManager.addTodo(this)">
+                    <button class="todo-add-btn" onclick="app.widgetManager.addTodo(this.previousElementSibling)">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>
+                <ul class="todo-list"></ul>
+            </div>
+        `;
+    }
+
+    createCounterWidget() {
+        return `
+            <div class="card">
+                <button class="delete-widget" onclick="app.widgetManager.deleteWidget(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <i class="bi bi-123"></i>
+                <h3 class="counter-value">0</h3>
+                <p>Counter</p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                    <button onclick="app.widgetManager.updateCounter(this, -1)" style="background: var(--accent-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">-</button>
+                    <button onclick="app.widgetManager.updateCounter(this, 1)" style="background: var(--accent-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">+</button>
+                </div>
+            </div>
+        `;
+    }
+
+    createProgressWidget() {
+        return `
+            <div class="card">
+                <button class="delete-widget" onclick="app.widgetManager.deleteWidget(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <i class="bi bi-bar-chart"></i>
+                <h3>75%</h3>
+                <p>Goal Progress</p>
+                <div style="background: var(--bg-primary); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 1rem;">
+                    <div style="background: var(--accent-color); height: 100%; width: 75%; transition: width 0.5s;"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    createNotesWidget() {
+        return `
+            <div class="card" style="text-align: left;">
+                <button class="delete-widget" onclick="app.widgetManager.deleteWidget(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <h3><i class="bi bi-journal-text"></i> Quick Notes</h3>
+                <textarea style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid var(--accent-light); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; resize: vertical;" placeholder="Write your notes here..."></textarea>
+            </div>
+        `;
+    }
+
+    createStatsWidget() {
+        return `
+            <div class="card">
+                <button class="delete-widget" onclick="app.widgetManager.deleteWidget(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <i class="bi bi-graph-up-arrow"></i>
+                <h3 class="random-stat">${Math.floor(Math.random() * 1000)}</h3>
+                <p>Random Stat</p>
+            </div>
+        `;
+    }
+
+    animateWidgetInsertion(widget) {
+        widget.style.opacity = '0';
+        widget.style.transform = 'scale(0.8)';
+        
+        setTimeout(() => {
+            widget.style.opacity = '1';
+            widget.style.transform = 'scale(1)';
+        }, 10);
+    }
+
+    initializeClockWidget(widget) {
+        const updateClock = () => {
+            const clockTime = widget.querySelector('.clock-time');
+            const clockDate = widget.querySelector('.clock-date');
+            if (clockTime && clockDate) {
+                const now = new Date();
+                clockTime.textContent = now.toLocaleTimeString();
+                clockDate.textContent = now.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            }
+        };
+        
         updateClock();
         setInterval(updateClock, 1000);
     }
-    
-    closeWidgetLibrary();
+
+    addTodo(input) {
+        const text = input.value.trim();
+        if (!text) return;
+        
+        const list = input.closest('.todo-widget').querySelector('.todo-list');
+        const li = document.createElement('li');
+        li.className = 'todo-item';
+        li.innerHTML = `
+            <input type="checkbox" onchange="this.parentElement.classList.toggle('completed')">
+            <span>${text}</span>
+            <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
+        list.appendChild(li);
+        input.value = '';
+    }
+
+    updateCounter(btn, change) {
+        const counter = btn.closest('.card').querySelector('.counter-value');
+        const currentValue = parseInt(counter.textContent);
+        counter.textContent = currentValue + change;
+    }
 }
 
-function updateClock() {
-    const clockTime = document.getElementById('clockTime');
-    const clockDate = document.getElementById('clockDate');
-    if (clockTime && clockDate) {
-        const now = new Date();
-        clockTime.textContent = now.toLocaleTimeString();
-        clockDate.textContent = now.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+// Theme Manager
+class ThemeManager {
+    constructor() {
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.theme;
+                this.setTheme(theme);
+                themeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
     }
+
+    setTheme(theme) {
+        document.body.dataset.theme = theme;
+        app.updateChartsTheme();
+    }
+}
+
+// Timeline Component
+class Timeline {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        this.steps = Array.from(this.container.querySelectorAll('.timeline-step'));
+        this.progress = this.container.querySelector('#timelineProgress');
+        this.wrapper = this.container.querySelector('#timelineWrapper');
+        
+        this.initialize();
+    }
+
+    initialize() {
+        this.steps.forEach(step => {
+            step.addEventListener('click', () => this.setStep(+step.dataset.step));
+        });
+        
+        window.addEventListener('resize', () => {
+            const active = this.steps.findIndex(step => step.classList.contains('active'));
+            this.setStep(active >= 0 ? active + 1 : 1);
+        });
+        
+        this.setStep(1);
+    }
+
+    isVertical() {
+        return window.matchMedia('(max-width:720px)').matches;
+    }
+
+    setStep(stepIndex) {
+        this.steps.forEach((step, idx) => {
+            step.classList.remove('active', 'completed');
+            if (idx < stepIndex - 1) step.classList.add('completed');
+            else if (idx === stepIndex - 1) step.classList.add('active');
+        });
+
+        const target = this.steps[stepIndex - 1];
+        const barRect = this.wrapper.querySelector('.timeline-bar').getBoundingClientRect();
+        const targetDot = target.querySelector('.dot').getBoundingClientRect();
+
+        if (this.isVertical()) {
+            const barTop = barRect.top;
+            const barHeight = barRect.height || 1;
+            const centerY = (targetDot.top + targetDot.bottom) / 2;
+            const filled = Math.max(0, Math.min(1, (centerY - barTop) / barHeight));
+            this.progress.style.height = (filled * 100).toFixed(2) + '%';
+        } else {
+            const barLeft = barRect.left;
+            const barWidth = barRect.width || 1;
+            const centerX = (targetDot.left + targetDot.right) / 2;
+            const filled = Math.max(0, Math.min(1, (centerX - barLeft) / barWidth));
+            this.progress.style.width = (filled * 100).toFixed(2) + '%';
+        }
+    }
+}
+
+// Main Application Class
+class Application {
+    constructor() {
+        this.savingsDataManager = new SavingsDataManager();
+        this.widgetManager = new WidgetManager();
+        this.themeManager = new ThemeManager();
+        this.timeline = new Timeline('timelineWrapper');
+        
+        this.components = {};
+    }
+
+    async initialize() {
+        // Initialize savings chart
+        this.savingsChart = new SavingsChart('myChart', this.savingsDataManager);
+        await this.savingsDataManager.loadData();
+        this.savingsChart.initialize();
+
+        // Initialize budget chart
+        this.budgetChart = new BudgetChart('budgetChart');
+        await this.budgetChart.initialize();
+
+        // Initialize document tracker table
+        this.documentTracker = new DocumentTrackerTable('tableCSV');
+
+        // Initialize modal manager
+        this.modalManager = new ModalManager(this.savingsDataManager, this.savingsChart);
+
+        // Update savings display
+        this.updateSavingsDisplay();
+
+        console.log('Application initialized successfully');
+    }
+
+    updateSavingsDisplay() {
+        const monthlyElement = document.getElementById('monthlySavings');
+        const currentElement = document.getElementById('currentSavings');
+        
+        if (monthlyElement && currentElement) {
+            const months = Object.keys(this.savingsDataManager.monthlyData).sort();
+            if (months.length === 0) {
+                monthlyElement.textContent = '0 Eur';
+                currentElement.textContent = '0 Eur';
+                return;
+            }
+            
+            const latestMonth = months[months.length - 1];
+            const monthlyVal = this.savingsDataManager.calculateCurrentMonthTotal(latestMonth);
+            const cumulativeTotals = this.savingsChart.calculateMonthlyTotals();
+            const currentVal = cumulativeTotals[cumulativeTotals.length - 1];
+            
+            monthlyElement.textContent = monthlyVal + ' Eur';
+            currentElement.textContent = currentVal + ' Eur';
+        }
+    }
+
+    async saveMonthData() {
+        try {
+            await this.savingsDataManager.saveData();
+            this.savingsChart.update();
+            this.updateSavingsDisplay();
+            this.modalManager.close();
+        } catch (error) {
+            console.error('Error saving month data:', error);
+            alert('Error saving data: ' + error.message);
+        }
+    }
+
+    updateChartsTheme() {
+        this.savingsChart.updateTheme();
+        if (window.budgetChartInstance) {
+            window.budgetChartInstance.update();
+        }
+    }
+
+    openMonthModal(month) {
+        this.modalManager.open(month);
+    }
+
+    openWidgetLibrary() {
+        this.widgetManager.openLibrary();
+    }
+}
+
+// Global application instance
+const app = new Application();
+
+// Initialize application when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    app.initialize();
+});
+
+// Global functions for HTML event handlers
+function openDataModal(month) {
+    app.openMonthModal(month);
+}
+
+function closeDataModal() {
+    app.modalManager.close();
+}
+
+function addDataRow() {
+    app.modalManager.addRow();
+}
+
+function saveMonthData() {
+    app.saveMonthData();
+}
+
+function openWidgetLibrary() {
+    app.openWidgetLibrary();
+}
+
+function closeWidgetLibrary() {
+    app.widgetManager.closeLibrary();
+}
+
+function addWidget(type) {
+    app.widgetManager.addWidget(type);
+}
+
+function deleteWidget(btn) {
+    app.widgetManager.deleteWidget(btn);
 }
 
 function addTodo(input) {
-    const text = input.value.trim();
-    if (!text) return;
-    
-    const list = input.closest('.todo-widget').querySelector('.todo-list');
-    const li = document.createElement('li');
-    li.className = 'todo-item';
-    li.innerHTML = `
-        <input type="checkbox" onchange="this.parentElement.classList.toggle('completed')">
-        <span>${text}</span>
-        <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;">
-            <i class="bi bi-trash"></i>
-        </button>
-    `;
-    list.appendChild(li);
-    input.value = '';
+    app.widgetManager.addTodo(input);
 }
 
 function updateCounter(btn, change) {
-    const counter = btn.closest('.card').querySelector('.counter-value');
-    const currentValue = parseInt(counter.textContent);
-    counter.textContent = currentValue + change;
+    app.widgetManager.updateCounter(btn, change);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class DocumentTracker {
-  constructor() {
-    this.table = document.getElementById("tableCSV");
-    this.tableHeader = document.getElementById("tableHeader");
-    this.tableBody = document.getElementById("tableBody");
-    this.messageDiv = document.getElementById("message");
-    this.hasUnsavedChanges = false;
-    this.isLoading = false;
-
-    this.initializeEventListeners();
-    this.loadCSVData();
-  }
-
-  initializeEventListeners() {
-    this.tableBody.addEventListener("click", (e) => {
-      if (e.target.classList.contains(`table-action-btn`)) {
-        this.toggleRow(e.target);
-      }
-    });
-  }
-
-  async loadCSVData() {
-    if (this.isLoading) return;
-
-    this.isLoading = true;
-
-    try {
-      // Call API
-      console.log("Loading Table Data 🔃");
-      const response = await fetch(API_BASE_URL + "/data");
-      // Error Handling
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        throw new Error(`Expected JSON but got: ${text.substring(0, 100)}`);
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        this.renderTable(data.data);
-        this.hasUnsavedChanges = false;
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  cleartable() {
-    this.tableHeader.innerHTML = ``;
-    this.tableBody.innerHTML = ``;    
-  }
-
-  createHeader(data) {
-    const headerRow = document.createElement('tr');
-    
-    // Create headers from the first data object's keys
-    Object.keys(data[0]).forEach(key => {
-      const th = document.createElement('th');
-      th.textContent = key;
-      headerRow.appendChild(th);
-    });
-    
-    // Add action column header
-    const actionTh = document.createElement("th");
-    actionTh.textContent = "Actions";
-    headerRow.appendChild(actionTh);
-
-    return headerRow;
-  }
-
-  renderTable(data) {
-    // Clear existing table
-    this.cleartable();
-
-    // Check if we have data
-    if (!data || data.length === 0) {
-      console.log("No data to render");
-      return;
-    }
-
-    // Create header row
-    const headerRow = this.createHeader(data);
-    this.tableHeader.appendChild(headerRow);
-
-    // Create data rows
-    data.forEach((row) => {
-      this.createTableRow(row);
-    });
-  }
-
-  createTableRow(rowData) {
-    const tr = document.createElement("tr");
-
-    Object.values(rowData).forEach((value) => {
-      const td = document.createElement("td");
-      td.textContent = value;
-      tr.appendChild(td);
-    });
-
-    // Apply initial styling based on the second cell (status)
-    const secondCell = tr.cells[1]; // second column
-    if (secondCell && secondCell.textContent.trim().toLowerCase() === "completed") {
-      tr.style.backgroundColor = "lightgreen"; // highlight row
-      Array.from(tr.cells).forEach((cell) => (cell.style.fontWeight = "bold")); // bold text
-    }
-
-    // Add toggle button
-    const actionTd = document.createElement("td");
-    const togglebtn = document.createElement("button");
-    togglebtn.type = "button";
-    togglebtn.textContent = "Toggle";
-    togglebtn.className = `table-action-btn`;
-    actionTd.appendChild(togglebtn);
-    tr.appendChild(actionTd);
-
-    this.tableBody.appendChild(tr);
-    return tr;
-  }
-
-  toggleRow(button) {
-    console.log("🟡 toggleRow called");
-
-    const row = button.closest("tr");
-    const secondCell = row.cells[1];
-
-    if (!secondCell) return;
-
-    const currentStatus = secondCell.textContent.trim().toLowerCase();
-
-    if (currentStatus === "completed") {
-      secondCell.textContent = "Pending";
-      row.style.backgroundColor = "";
-      Array.from(row.cells).forEach((cell) => {
-        cell.style.fontWeight = "normal";
-      });
-    } else {
-      secondCell.textContent = "Completed";
-      row.style.backgroundColor = "lightgreen";
-      Array.from(row.cells).forEach((cell) => {
-        cell.style.fontWeight = "bold";
-      });
-    }
-
-    this.hasUnsavedChanges = true;
-    console.log("🟡 About to call saveChanges");
-    this.saveChanges();
-    console.log("🟡 saveChanges returned");
-  }
-
-  async saveChanges() {
-    console.log("🔵 saveChanges called");
-
-    try {
-      console.log("🔵 Building data...");
-      
-      // Get headers excluding the "Actions" column
-      const headerCells = this.tableHeader.querySelectorAll("th");
-      const headers = Array.from(headerCells)
-        .map((th) => th.textContent)
-        .filter((header) => header !== "Actions");
-
-      const data = [];
-      const rows = this.tableBody.querySelectorAll("tr");
-
-      rows.forEach((row) => {
-        const rowData = {};
-        const cells = row.querySelectorAll("td");
-
-        cells.forEach((cell, index) => {
-          // Only include data columns (exclude the action button column)
-          if (index < headers.length) {
-            rowData[headers[index]] = cell.textContent.trim();
-          }
-        });
-
-        // Only add row if it has data
-        if (Object.keys(rowData).length > 0) {
-          data.push(rowData);
-        }
-      });
-
-      console.log("🔵 Sending fetch request...", data);
-      const response = await fetch(API_BASE_URL + "/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ data: data }),
-      });
-
-      console.log("🔵 Fetch response received:", response.status);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      console.log("🔵 Save completed successfully");
-      this.hasUnsavedChanges = false;
-    } catch (error) {
-      console.error("🔵 Error saving data:", error);
-    }
-
-    console.log("🔵 saveChanges function finished");
-  }
-}
-
-// Initialize the editor when the page loads
-let documentTracker;
-
-document.addEventListener('DOMContentLoaded', () => {
-  documentTracker = new DocumentTracker();
-  // Remove these lines as they're already called in the constructor
-  // initializeEventListeners() 
-  // loadCSVData1()
-  // loadChartData();
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-async function loadChartData() {
-  console.log("📊 Starting to load chart data...");
-
-  try {
-    // Fetch your data from the API
-    console.log(`➡️ Fetching from: ${API_BASE_URL}/bar/data`);
-    const response = await fetch(API_BASE_URL + "/bar/data");
-
-    if (!response.ok) {
-      console.error(`❌ HTTP error! status: ${response.status}`);
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Parse JSON
-    const result = await response.json();
-    console.log("✅ Raw API response:", result);
-
-    // Validate API structure
-    if (!result.success) {
-      console.error("⚠️ API returned success: false");
-      throw new Error("API returned success: false");
-    }
-    if (!Array.isArray(result.data)) {
-      console.error("⚠️ API data is not an array:", result.data);
-      throw new Error("Invalid data format from API");
-    }
-
-    // Extract labels and values
-    const labels = result.data.map(item => item.Description);
-    const values = result.data.map(item => item.Cost);
-
-    console.log("📌 Labels:", labels);
-    console.log("💰 Values:", values);
-
-    // Check for empty data
-    if (labels.length === 0 || values.length === 0) {
-      console.warn("⚠️ No data found to render chart!");
-      return;
-    }
-
-    // Render chart
-    renderBudgetChart(labels, values);
-    console.log("✅ Chart rendered successfully!");
-
-  } catch (error) {
-    console.error("🚨 Error loading chart data:", error);
-  }
-}
-
-function renderBudgetChart(labels, values) {
-  console.log("📈 Rendering chart with data:", { labels, values });
-
-  const canvas = document.getElementById('budgetChart');
-  if (!canvas) {
-    console.error("❌ Canvas element with ID 'budgetChart' not found!");
-    return;
-  }
-
-  const ctx = canvas.getContext('2d');
-
-  // Destroy existing chart if it exists (prevents overlay issue)
-  if (window.budgetChartInstance) {
-    console.log("♻️ Destroying existing chart instance...");
-    window.budgetChartInstance.destroy();
-  }
-
-  window.budgetChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Cost (USD)',
-        data: values,
-        borderRadius: 10,
-        backgroundColor: [
-          'rgba(37, 99, 235, 0.9)',
-          'rgba(59, 130, 246, 0.9)',
-          'rgba(147, 197, 253, 0.9)'
-        ],
-        hoverBackgroundColor: [
-          'rgba(37, 99, 235, 1)',
-          'rgba(59, 130, 246, 1)',
-          'rgba(147, 197, 253, 1)'
-        ]
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: '#6b7280' }
-        },
-        y: {
-          beginAtZero: true,
-          grid: { color: '#f0f6ff' },
-          ticks: { color: '#6b7280', stepSize: 50 }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(37,99,235,0.9)',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderWidth: 0,
-          padding: 8
-        }
-      }
-    }
-  });
-
-  console.log("✅ Chart successfully created!");
-}
-
-
-// Call it when the page loads
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /* ---------- Timeline Interactivity ---------- */
-(function(){
-    const steps = Array.from(document.querySelectorAll('.timeline-step'));
-    const progress = document.getElementById('timelineProgress');
-    const wrapper = document.getElementById('timelineWrapper');
-
-    function isVertical(){ return window.matchMedia('(max-width:720px)').matches; }
-
-    function setStep(stepIndex){
-    steps.forEach((s, idx) => {
-        s.classList.remove('active','completed');
-        if(idx < stepIndex - 1) s.classList.add('completed');
-        else if(idx === stepIndex - 1) s.classList.add('active');
-    });
-
-    const target = steps[stepIndex - 1];
-    const barRect = wrapper.querySelector('.timeline-bar').getBoundingClientRect();
-    const targetDot = target.querySelector('.dot').getBoundingClientRect();
-
-    if(isVertical()){
-        const barTop = barRect.top;
-        const barHeight = barRect.height || 1;
-        const centerY = (targetDot.top + targetDot.bottom) / 2;
-        const filled = Math.max(0, Math.min(1, (centerY - barTop) / barHeight));
-        progress.style.height = (filled * 100).toFixed(2) + '%';
-    } else {
-        const barLeft = barRect.left;
-        const barWidth = barRect.width || 1;
-        const centerX = (targetDot.left + targetDot.right) / 2;
-        const filled = Math.max(0, Math.min(1, (centerX - barLeft) / barWidth));
-        progress.style.width = (filled * 100).toFixed(2) + '%';
-    }
-    }
-
-    steps.forEach(s => s.addEventListener('click', () => setStep(+s.dataset.step)));
-    window.addEventListener('resize', () => {
-    const active = steps.findIndex(s => s.classList.contains('active'));
-    setStep(active >= 0 ? active + 1 : 1);
-    });
-
-    setStep(1);
-})();
-
-
