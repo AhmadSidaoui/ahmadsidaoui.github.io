@@ -628,12 +628,6 @@ function updateCounter(btn, change) {
 
 
 
-
-
-
-
-
-
 class DocumentTracker {
   constructor() {
     this.table = document.getElementById("tableCSV");
@@ -656,14 +650,12 @@ class DocumentTracker {
   }
 
   async loadCSVData() {
-
     if (this.isLoading) return;
 
     this.isLoading = true;
 
     try {
-        
-        // Call API
+      // Call API
       console.log("Loading Table Data 🔃");
       const response = await fetch(API_BASE_URL + "/data");
       // Error Handling
@@ -687,7 +679,6 @@ class DocumentTracker {
     } finally {
       this.isLoading = false;
     }
-
   }
 
   cleartable() {
@@ -697,35 +688,41 @@ class DocumentTracker {
 
   createHeader(data) {
     const headerRow = document.createElement('tr');
+    
+    // Create headers from the first data object's keys
     Object.keys(data[0]).forEach(key => {
-        const th = document.createElement('th');
-        th.textContent = key;
-        headerRow.appendChild(th);
+      const th = document.createElement('th');
+      th.textContent = key;
+      headerRow.appendChild(th);
     });
-  }
-
-
-  renderTable(data) {
-    // Clear existing table
-    this.cleartable();
-
-    // Create header row
-    this.createHeader(data);
     
     // Add action column header
     const actionTh = document.createElement("th");
     actionTh.textContent = "Actions";
     headerRow.appendChild(actionTh);
 
+    return headerRow;
+  }
+
+  renderTable(data) {
+    // Clear existing table
+    this.cleartable();
+
+    // Check if we have data
+    if (!data || data.length === 0) {
+      console.log("No data to render");
+      return;
+    }
+
+    // Create header row
+    const headerRow = this.createHeader(data);
     this.tableHeader.appendChild(headerRow);
 
     // Create data rows
-    data.forEach((row, index) => {
+    data.forEach((row) => {
       this.createTableRow(row);
     });
   }
-
-
 
   createTableRow(rowData) {
     const tr = document.createElement("tr");
@@ -738,20 +735,17 @@ class DocumentTracker {
 
     // Apply initial styling based on the second cell (status)
     const secondCell = tr.cells[1]; // second column
-    if (
-      secondCell &&
-      secondCell.textContent.trim().toLowerCase() === "completed"
-    ) {
+    if (secondCell && secondCell.textContent.trim().toLowerCase() === "completed") {
       tr.style.backgroundColor = "lightgreen"; // highlight row
       Array.from(tr.cells).forEach((cell) => (cell.style.fontWeight = "bold")); // bold text
     }
 
-    // Add toggle button  ---> we are appending the buttong at the end
+    // Add toggle button
     const actionTd = document.createElement("td");
     const togglebtn = document.createElement("button");
     togglebtn.type = "button";
     togglebtn.textContent = "Toggle";
-    togglebtn.className = `table-action-btn`; //'delete-row';
+    togglebtn.className = `table-action-btn`;
     actionTd.appendChild(togglebtn);
     tr.appendChild(actionTd);
 
@@ -784,18 +778,20 @@ class DocumentTracker {
     }
 
     this.hasUnsavedChanges = true;
-
     console.log("🟡 About to call saveChanges");
     this.saveChanges();
     console.log("🟡 saveChanges returned");
   }
 
-  async saveChanges(event) {
+  async saveChanges() {
     console.log("🔵 saveChanges called");
 
     try {
       console.log("🔵 Building data...");
-      const headers = Array.from(this.tableHeader.querySelectorAll("th"))
+      
+      // Get headers excluding the "Actions" column
+      const headerCells = this.tableHeader.querySelectorAll("th");
+      const headers = Array.from(headerCells)
         .map((th) => th.textContent)
         .filter((header) => header !== "Actions");
 
@@ -807,17 +803,19 @@ class DocumentTracker {
         const cells = row.querySelectorAll("td");
 
         cells.forEach((cell, index) => {
-          if (headers[index]) {
+          // Only include data columns (exclude the action button column)
+          if (index < headers.length) {
             rowData[headers[index]] = cell.textContent.trim();
           }
         });
 
-        if (Object.values(rowData).some((value) => value !== "")) {
+        // Only add row if it has data
+        if (Object.keys(rowData).length > 0) {
           data.push(rowData);
         }
       });
 
-      console.log("🔵 Sending fetch request...");
+      console.log("🔵 Sending fetch request...", data);
       const response = await fetch(API_BASE_URL + "/save", {
         method: "POST",
         headers: {
@@ -842,18 +840,16 @@ class DocumentTracker {
   }
 }
 
-
 // Initialize the editor when the page loads
 let documentTracker;
-documentTracker = new DocumentTracker();
 
 document.addEventListener('DOMContentLoaded', () => {
-        initializeEventListeners() 
-        loadCSVData1()
-        loadChartData();
+  documentTracker = new DocumentTracker();
+  // Remove these lines as they're already called in the constructor
+  // initializeEventListeners() 
+  // loadCSVData1()
+  // loadChartData();
 });
-
-
 
 
 
