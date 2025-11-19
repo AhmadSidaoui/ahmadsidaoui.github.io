@@ -44,7 +44,14 @@
    --------------------------------------------------------- */
     
   // GitHub Configuration
-  dotenv.config({ path: '../../.env' });
+  try {
+    if (PORT === 3000) {
+      dotenv.config({ path: '../../.env' });
+    }
+  } catch (err) {
+    console.error("❌ Error loading .env file:", err);
+  }
+
   const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
   console.log(`🔑 GitHub Token present: ${!!GITHUB_TOKEN}`);
 
