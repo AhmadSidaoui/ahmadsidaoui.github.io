@@ -9,6 +9,7 @@
   import { Octokit } from "@octokit/rest";
   import fsSync from 'fs';
   import 'dotenv/config'; // automatically loads .env
+  import dotenv from 'dotenv';
 
 /* -------------------------------------------------------------
    Configuration: locate the CSV files and server settings
@@ -43,6 +44,7 @@
    --------------------------------------------------------- */
     
   // GitHub Configuration
+  dotenv.config({ path: '../../.env' });
   const GITHUB_TOKEN = process.env.GITHUB_ACCESSTOKEN;
   console.log(`🔑 GitHub Token present: ${!!GITHUB_TOKEN}`);
 
