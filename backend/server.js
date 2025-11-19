@@ -176,46 +176,92 @@ class CSVManager {
    --------------------------------------------------------- */
 
 class GitHubService {
-
-  static async commitFile(filePath, commitMessage) {
-    console.log(`🔗 Starting GitHub commit for: ${filePath}`);
-    
-    try {
-
-      const fileContent = await fs.readFile(filePath, 'utf8');
-      const contentBase64 = Buffer.from(fileContent).toString('base64');
-      console.log(`📊 File content size: ${fileContent.length} chars, base64: ${contentBase64.length} chars`);
-
-      let sha;
-      try {
-        console.log(`🔍 Checking if file exists on GitHub...`);
-        const { data } = await octokit.repos.getContent({
-          ...GITHUB_CONFIG,
-          path: path.basename(filePath),
-        });
-        sha = data.sha;
-        console.log(`✅ File exists on GitHub, SHA: ${sha.substring(0, 8)}...`);
-      } catch (err) {
-        console.log(`ℹ️ File doesn't exist on GitHub, creating new file`);
-        sha = undefined; // File doesn't exist on GitHub
-      }
-
-      await octokit.repos.createOrUpdateFileContents({
-        ...GITHUB_CONFIG,
-        path: path.basename(filePath),
-        message: commitMessage,
-        content: contentBase64,
-        sha,
-      });
-
-      console.log(`✅ ${path.basename(filePath)} committed to GitHub`);
-      return true;
-    } catch (err) {
-      console.error("❌ GitHub commit failed:", err.message);
-      console.error("❌ GitHub error details:", err);
-      return false;
+    constructor(config) {
+        this.owner = config.owner;
+        this.repo = config.repo;
+        this.token = config.token;
+        this.octokit = new Octokit({ auth: this.token });
     }
-  }
+
+    async commitFile(filePath, message) {
+        console.log("\n===========================================");
+        console.log("🔵 GitHubService.commitFile() STARTED");
+        console.log("File:", filePath);
+        console.log("Message:", message);
+        console.log("===========================================\n");
+
+        try {
+            const repoPath = path.basename(filePath); // NOTE: still root-level; path debugging added below
+            console.log("📌 GitHub Path:", repoPath);
+
+            // Read local file
+            const fileContent = await fs.readFile(filePath, "utf8");
+            const encodedContent = Buffer.from(fileContent, "utf8").toString("base64");
+
+            console.log("📦 Local file read OK. Size:", fileContent.length, "bytes");
+
+            // Get SHA if file exists on GitHub
+            let sha = null;
+            try {
+                const existing = await this.octokit.repos.getContent({
+                    owner: this.owner,
+                    repo: this.repo,
+                    path: repoPath
+                });
+
+                sha = existing.data.sha;
+
+                console.log("🔍 Found existing GitHub file.");
+                console.log("🔑 Existing SHA:", sha);
+                console.log("📏 GitHub file size:", existing.data.size);
+            } catch (err) {
+                console.log("🟡 GitHub file does NOT exist. Creating new file.");
+            }
+
+            console.log("\n📤 Sending update to GitHub...");
+            console.log("-------------------------------------------");
+            console.log("owner:", this.owner);
+            console.log("repo:", this.repo);
+            console.log("path:", repoPath);
+            console.log("sha:", sha);
+            console.log("-------------------------------------------\n");
+
+            const response = await this.octokit.repos.createOrUpdateFileContents({
+                owner: this.owner,
+                repo: this.repo,
+                path: repoPath,
+                message: message,
+                content: encodedContent,
+                sha: sha ?? undefined,
+            });
+
+            console.log("✅ GitHub API Response Received");
+            console.log("📄 Status:", response.status);
+            console.log("🌿 Commit SHA:", response.data.commit.sha);
+            console.log("📝 Commit Message:", response.data.commit.message);
+
+            console.log("\n===========================================");
+            console.log("🟢 GitHubService.commitFile() FINISHED OK");
+            console.log("===========================================\n");
+
+            return response;
+
+        } catch (err) {
+            console.error("\n===========================================");
+            console.error("🔴 GITHUB COMMIT FAILED");
+            console.error("Message:", err.message);
+
+            if (err.response) {
+                console.error("🔻 GitHub API Error Response:");
+                console.error("Status:", err.response.status);
+                console.error("Headers:", err.response.headers);
+                console.error("Data:", err.response.data);
+            }
+
+            console.error("===========================================\n");
+            throw err;
+        }
+    }
 }
 
 
