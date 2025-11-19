@@ -187,7 +187,7 @@ class GitHubService {
         console.log("===========================================\n");
 
         try {
-            const repoPath = path.join(__dirname, path.basename(filePath)); // NOTE: still root-level; path debugging added below
+            const repoPath = `backend/${path.basename(filePath)}`
             console.log("📌 GitHub Path:", repoPath);
 
             // Read local file
