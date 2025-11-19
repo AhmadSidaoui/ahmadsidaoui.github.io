@@ -71,11 +71,6 @@
   const octokit = new Octokit({ auth: GITHUB_TOKEN });
   console.log("✅ Octokit initialized");
 
-  const github = new GitHubService({
-    owner: GITHUB_CONFIG.owner,
-    repo: GITHUB_CONFIG.repo,
-    token: GITHUB_TOKEN
-  });
 
 
   
@@ -609,6 +604,12 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Start server
 console.log(`🔧 Starting application...`);
+// initialize GitHub Service
+const github = new GitHubService({
+  owner: GITHUB_CONFIG.owner,
+  repo: GITHUB_CONFIG.repo,
+  token: GITHUB_TOKEN
+});
 initializeServer().catch(error => {
   console.error('💥 Failed to initialize server:', error);
   process.exit(1);
