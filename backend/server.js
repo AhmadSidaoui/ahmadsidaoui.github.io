@@ -71,8 +71,11 @@
   const octokit = new Octokit({ auth: GITHUB_TOKEN });
   console.log("✅ Octokit initialized");
 
-
-
+  const github = new GitHubService({
+    owner: GITHUB_CONFIG.owner,
+    repo: GITHUB_CONFIG.repo,
+    token: GITHUB_TOKEN
+  });
 
 
   
@@ -370,7 +373,7 @@ class RequestHandler {
       // await CSVManager.appendCSV(filePath, data);
       await CSVManager.writeCSV(filePath, data);
       
-      await GitHubService.commitFile(filePath, `Update ${path.basename(filePath)} via server`);
+      await github.commitFile(filePath, `Update ${path.basename(filePath)} via server`);
       
       this.sendJson(res, 200, { success: true, message: 'Data saved successfully' });
 
