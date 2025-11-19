@@ -321,7 +321,8 @@ class RequestHandler {
         throw new Error('Data must be an array');
       }
 
-      await CSVManager.appendCSV(filePath, data);
+      // await CSVManager.appendCSV(filePath, data);
+      await CSVManager.writeCSV(filePath, data);
       
       await GitHubService.commitFile(filePath, `Update ${path.basename(filePath)} via server`);
       
