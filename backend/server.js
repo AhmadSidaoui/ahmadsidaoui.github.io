@@ -68,8 +68,6 @@
     process.exit(1);
   }
 
-  const octokit = new Octokit({ auth: GITHUB_TOKEN });
-  console.log("✅ Octokit initialized");
 
 
 
@@ -189,7 +187,7 @@ class GitHubService {
         console.log("===========================================\n");
 
         try {
-            const repoPath = path.basename(filePath); // NOTE: still root-level; path debugging added below
+            const repoPath = path.join(__dirname, path.basename(filePath)); // NOTE: still root-level; path debugging added below
             console.log("📌 GitHub Path:", repoPath);
 
             // Read local file
