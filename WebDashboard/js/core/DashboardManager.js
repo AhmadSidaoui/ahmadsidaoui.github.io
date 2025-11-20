@@ -16,6 +16,12 @@ export class DashboardManager {
     import('../components/SavingsChart.js').then(module => module.SavingsChart.init());
     import('../components/DocumentTracker.js').then(module => module.DocumentTracker.init());
     import('../components/BudgetChart.js').then(module => module.BudgetChart.init());
+    
+    import('../widgets/TodoWidget.js').then(module => {
+        window.TodoWidget = module.TodoWidget;
+    });
+
+  
   }
 
   static initializeEventListeners() {

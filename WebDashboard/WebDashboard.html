@@ -12,6 +12,7 @@
 </head>
 
 <body data-theme="light">
+
   <header class="header">
     <h1>Dashboard Overview <span class="live-indicator"></span></h1>
     <div class="header-controls">
@@ -21,9 +22,14 @@
         <button class="theme-btn sunset" data-theme="sunset" title="Sunset Theme"></button>
         <button class="theme-btn forest" data-theme="forest" title="Forest Theme"></button>
       </div>
+  
       <button class="add-widget-btn" onclick="DashboardManager.openWidgetLibrary()">
         <i class="bi bi-plus-circle"></i> Add Widget
       </button>
+      
+      <a class="add-widget-btn" href="TaskManager.html">
+        Task Manager
+      </a>
     </div>
   </header>
 
@@ -33,10 +39,13 @@
         <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)">
           <i class="bi bi-x"></i>
         </button>
+
         <h2>Projected Savings</h2>
+
         <div>
           <canvas id="myChart" width="400" height="200"></canvas>
         </div>
+
         <div>
           <canvas id="budgetChart"></canvas>
         </div>
@@ -46,13 +55,17 @@
         <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)">
           <i class="bi bi-x"></i>
         </button>
+
         <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+
         <div class="todo-input-container">
           <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') TodoWidget.addTodo(this)">
+          
           <button class="todo-add-btn" onclick="TodoWidget.addTodo(this.previousElementSibling)">
             <i class="bi bi-plus"></i>
           </button>
         </div>
+        
         <ul class="todo-list"></ul>
       </div>
 

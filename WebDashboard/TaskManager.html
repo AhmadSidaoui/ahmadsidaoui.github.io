@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../CSS/WebDashboardStyle.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body data-theme="light">
+
+  <header class="header">
+    <h1>Dashboard Overview <span class="live-indicator"></span></h1>
+    <div class="header-controls">
+      <div class="theme-switcher">
+        <button class="theme-btn light active" data-theme="light" title="Light Theme"></button>
+        <button class="theme-btn dark" data-theme="dark" title="Dark Theme"></button>
+        <button class="theme-btn sunset" data-theme="sunset" title="Sunset Theme"></button>
+        <button class="theme-btn forest" data-theme="forest" title="Forest Theme"></button>
+      </div>
+        
+      <a class="add-widget-btn" href="WebDashboard.html">
+        Return to Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main >
+
+  <div class="card enhanced-card" style="position: relative; padding: 1.25rem; border-radius: 14px; background: var(--bg-secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--accent-light);">
+    <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-secondary); transition: color 0.2s;">
+      <i class="bi bi-x"></i>
+    </button>
+
+    <h3 style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+      <i class="bi bi-journal-text" style="opacity: 0.8;"></i> Quick Notes
+    </h3>
+
+    <textarea style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--accent-light); border-radius: 10px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit; resize: vertical; transition: border-color 0.25s, box-shadow 0.25s;"
+      placeholder="Write your notes here..."
+      onfocus="this.style.borderColor='var(--accent)'; this.style.boxShadow='0 0 6px var(--accent-light)';"
+      onblur="this.style.borderColor='var(--accent-light)'; this.style.boxShadow='none';"></textarea>
+  </div>
+
+
+
+    <div class="card todo-widget">
+      <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)">
+        <i class="bi bi-x"></i>
+      </button>
+
+      <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+
+      <div class="todo-input-container">
+        <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') TodoWidget.addTodo(this)">
+        
+        <button class="todo-add-btn" onclick="TodoWidget.addTodo(this.previousElementSibling)">
+          <i class="bi bi-plus"></i>
+        </button>
+      </div>
+      
+      <ul class="todo-list"></ul>
+    </div>
+
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>
