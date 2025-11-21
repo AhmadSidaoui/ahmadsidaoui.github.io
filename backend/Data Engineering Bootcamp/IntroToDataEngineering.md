@@ -2,67 +2,73 @@
 
 - Data engineering is different than data science or data analysis
 
-- what is the data problem ?
-    - companies are drowning in data  ---> the data is coming from a lot of sources and in differnt formats
-    - data formats like
-        - structured data  ---> database records
-        - semi structured  ---> JSON from API
-        - unstructured     ---> Text files and PDFs
-    - how to turn the messy scattered data into something that can drive business decisions ?
-    ![alt text](image.png)
+- What is the data problem?
+    - Companies are drowning in data — coming from many sources & in different formats
+    - Data formats include:
+        - **Structured** → database records  
+        - **Semi-structured** → JSON from APIs  
+        - **Unstructured** → text files, PDFs  
+    - How do we turn messy scattered data into something useful?
 
-- What is the definition of Data Engineering ?
-    - Data engineers are the architects and builders who create the system that makes analysis of the data possible
-    ![alt text](image-1.png)
-    - Create reliable automated system that collect clean transform and deliver that data to where it needs to go
-    - build the highways that data travels on
+    ![alt text](https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/image.png)
 
-- ## ETL and ELT
-    - ETL  ---> extract; transform; load
-        - extract the data that we need and flow it in the pipeline
-        - transforming it  ---> preprocessing, like cleaning, standardizing the data, data integration etc ...
-        - load the data ---> insert the data into datawarehouse or sed it to updated dashboards ---> usually its going to a data warehouse
-        ![alt text](image-2.png)
-        - slow expensive and difficult to change
-        - single purpose method ---> data is transformed to one specific usecase
+- **What is the definition of Data Engineering?**
+    - Data engineers are architects + builders who create systems that make data analysis possible
 
-    - ELT  ---> extract; load; transform ---> Used in this course
-        - more flexible and more cost effective
-        - handle and batch real time data
-        - serve multiple usecases from the same data platform
-        - extract the data from the sources ---> load the data into cloud, datalake (amazon S3 or azure datalake) ---> transformation happens when and how is needed (using data compute)
-        - multi purpose ---> transformation is done when needed based on the use case ---> it will tap into the datalake
-        ![alt text](image-3.png)
+    ![alt text](https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/image-1.png)
 
+    - Create reliable automated systems that collect, clean, transform & deliver data
+    - Build the highways that data travels on
 
-- ## Data Engineering Ecosystem
-    - ![alt text](image-4.png)
-    - Data Soruces
-        - Databases
-        - APIs
-        - IOT devices ---> like sensors and SCADA Devices
-        - CSV files
-        - Realtime click stream data
-        - etc...
-    - Data Ingestion
-        - how to reliably move data from sources to the my data platform
-        - example:
-            - Batch ingestion
-            - Real-time streaming ---> apache Kafka to stream every website click as it happens
-            - CDC ---> change data capture ---> automatically detecting any changes in the database table
-    - Data Storage
-        - modern storage designed for flexibility and scale
-        - examples:
-            - Datalakes: (Amazon S3 or Azure datalake) ---> store data in its original fomat (csv files or pdfs etc...)
-            - Data Warehouse (snowflake or redshift) optimized for fast analytical queries
-    - Data Preprocessing
-        - 
+---
 
+## ETL and ELT
 
+### **ETL — Extract, Transform, Load**
+- Extract data and pull it into the pipeline  
+- Transform → cleaning, standardizing, integration  
+- Load → usually into a data warehouse  
+- Slow, expensive, hard to change  
+- Single-purpose transformations  
 
+![alt text](https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/image-2.png)
 
-    
+---
 
+### **ELT — Extract, Load, Transform (modern approach)**  
+- More flexible & cost-effective  
+- Supports batch + real-time  
+- Serves multiple use cases from one platform  
+- Extract → load into cloud/datalake → transform when needed  
+- Multi-purpose → transformation depends on the use case  
 
+![alt text](https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/image-3.png)
 
+---
 
+## Data Engineering Ecosystem
+
+![alt text](https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/image-4.png)
+
+### **Data Sources**
+- Databases  
+- APIs  
+- IoT devices (sensors, SCADA)  
+- CSV files  
+- Real-time clickstream  
+- etc.
+
+### **Data Ingestion**
+- Moving data reliably into your platform  
+- Methods:
+    - Batch  
+    - Real-time streaming (Kafka, etc.)  
+    - CDC — Change Data Capture  
+
+### **Data Storage**
+- Modern storage built for scale + flexibility  
+- Datalakes (S3 / Azure Data Lake) — store raw files  
+- Data warehouses (Snowflake, Redshift) — optimized for analytics
+
+### **Data Preprocessing**
+- Cleaning, validation, transformation before analytics

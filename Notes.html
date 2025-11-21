@@ -36,9 +36,9 @@
     </div>
 
   <script>
-    fetch('backend/Data Engineering Bootcamp/IntroToDataEngineering.md')
-  .then(response => response.text())
-  .then(md => { document.getElementById("content").innerHTML = marked.parse(md); })
+    fetch("https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/IntroToDataEngineering.md")
+      .then(response => response.text())
+      .then(md => { document.getElementById("content").innerHTML = marked.parse(md); })
   </script>
   
 </body>
