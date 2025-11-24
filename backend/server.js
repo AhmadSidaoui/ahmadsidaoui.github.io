@@ -356,9 +356,6 @@ class RequestHandler {
 
 
 
-
-
-
   static async handleStaticFiles(req, res, pathname) {
     console.log(`📁 Handling static file request for: ${pathname}`);
     
