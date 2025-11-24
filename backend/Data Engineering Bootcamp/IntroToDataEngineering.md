@@ -111,10 +111,14 @@
 
 ---
 
-## Real world examples
+## Real World Examples
 
 - Millions of customers are generating review on a website
 - Build a system that catch these events in real time ---> process them to fraude detection algorithms ---> update inventory systems ---> generate recommendations ---> update dashboards
 
 ![alt text](https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/image-5.png)
+
+
+
+# Virtual Environment and pytohn packages
 
