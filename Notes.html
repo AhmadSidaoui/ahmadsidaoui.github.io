@@ -32,11 +32,11 @@
 </head>
 
 <body>
-
   <nav id="navbar">
     <div class="logo">AS</div>
     <ul>
       <li><a class="btn primary" href="index.html">Back</a></li>
+      <li><button class="btn secondary" onclick="">Back</button></li>
     </ul>
   </nav>
 
@@ -47,9 +47,41 @@
   </div>
 
   <script>
-    fetch("https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/IntroToDataEngineering.md")
-      .then(response => response.text())
-      .then(md => { document.getElementById("content").innerHTML = marked.parse(md); });
+
+    mdList = [
+      "https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/1.IntroToDataEngineering.md",
+      "https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Data%20Engineering%20Bootcamp/2.Environment%20Setup.md"
+    ];
+
+    function mdLoad(link) {
+      fetch(link)
+        .then(response => response.text())
+        .then(md => { document.getElementById("content").innerHTML = marked.parse(md); });
+    }
+
+    function mdNext() {
+      let currentLink = document.getElementById("content").getAttribute("data-link");
+      let currentIndex = mdList.indexOf(currentLink);
+      let nextIndex = (currentIndex + 1) % mdList.length;
+      let nextLink = mdList[nextIndex];
+      mdLoad(nextLink);
+      document.getElementById("content").setAttribute("data-link", nextLink);
+    }
+
+    function mdPrev() {
+      let currentLink = document.getElementById("content").getAttribute("data-link");
+      let currentIndex = mdList.indexOf(currentLink);
+      let prevIndex = (currentIndex - 1 + mdList.length) % mdList.length;
+      let prevLink = mdList[prevIndex];
+      mdLoad(prevLink);
+      document.getElementById("content").setAttribute("data-link", prevLink);
+    }
+
+    initialLink = mdList[0];
+    document.getElementById("content").setAttribute("data-link", initialLink);
+    mdLoad(initialLink);
+
+  
   </script>
 
 </body>
