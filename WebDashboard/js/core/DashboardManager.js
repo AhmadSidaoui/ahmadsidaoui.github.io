@@ -1,6 +1,10 @@
 import { Config } from './Config.js';
 import { WidgetFactory } from './WidgetFactory.js';
 
+import { TodoWidget } from '../widgets/TodoWidget.js';
+window.TodoWidget = TodoWidget;
+
+
 // =============================================================================
 // DASHBOARD MANAGER - Main Application Controller
 // =============================================================================
@@ -17,9 +21,9 @@ export class DashboardManager {
     import('../components/DocumentTracker.js').then(module => module.DocumentTracker.init());
     import('../components/BudgetChart.js').then(module => module.BudgetChart.init());
     
-    import('../widgets/TodoWidget.js').then(module => {
-        window.TodoWidget = module.TodoWidget;
-    });
+    // import('../widgets/TodoWidget.js').then(module => {
+    //     window.TodoWidget = module.TodoWidget;
+    // });
 
   
   }
