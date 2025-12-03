@@ -230,21 +230,6 @@ class SavingsChart {
     this.loadCSVData();
   }
 
-  static calculateFilteredTotals() {
-      const sortedMonths = this.getSortedMonths();
-
-      return sortedMonths.map(month => {
-          const items = this.monthlyData[month] || [];
-
-          const filtered = items.filter(item =>
-              item.reason && item.reason.trim().toLowerCase().startsWith("a")
-          );
-
-          return filtered.reduce((sum, item) => sum + item.value, 0);
-      });
-  }
-
-
   static async loadCSVData() {
     try {
       const response = await fetch(`${Config.API_BASE_URL}/chart/data`);
@@ -341,28 +326,19 @@ class SavingsChart {
       type: 'line',
       data: {
         labels: sortedMonths,
-        datasets: [
-          {
-            type: 'bar',
-            label: 'Filtered Value (Reason starts with A)',
-            data: this.calculateFilteredTotals(),   // <-- NEW FUNCTION YOU ADD BELOW
-            backgroundColor: 'rgba(100, 180, 255, 0.5)',
-            borderRadius: 8
-          },
-          {
-            type: 'line',
-            label: 'Cumulative Savings',
-            data: this.calculateMonthlyTotals(),
-            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
-            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-light'),
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
-            pointBorderColor: '#fff',
-            pointRadius: 6,
-            pointHoverRadius: 8,
-          }
-        ]
+        datasets: [{
+          label: 'Cumulative Savings',
+          data: this.calculateMonthlyTotals(),
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-light'),
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-color'),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        }]
       },
       options: {
         responsive: true,
@@ -521,22 +497,12 @@ class SavingsChart {
   }
 
   static saveMonthData() {
-      // Update BAR dataset (filtered values)
-      this.chart.data.datasets[0].data = this.calculateFilteredTotals();
-
-      // Update LINE dataset (cumulative savings)
-      this.chart.data.datasets[1].data = this.calculateMonthlyTotals();
-
-      // Update labels
-      this.chart.data.labels = this.getSortedMonths();
-
-      // Refresh chart
-      this.chart.update();
-
-      // Update UI + save files
-      this.updateSavingsDisplay();
-      this.saveToCSV();
-      this.closeDataModal();
+    this.chart.data.labels = this.getSortedMonths();
+    this.chart.data.datasets[0].data = this.calculateMonthlyTotals();
+    this.chart.update();
+    this.updateSavingsDisplay();
+    this.saveToCSV();
+    this.closeDataModal();
   }
 
   static updateSavingsDisplay() {
