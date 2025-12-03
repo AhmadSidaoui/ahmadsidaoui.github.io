@@ -51,3 +51,9 @@ function loadReport() {
 };
 
 
+function downloadPDF() {
+  const link = document.createElement("a");
+  link.href = "/api/download/pdf";
+  // link.download = "file.pdf";   // optional — browser will use server filename if omitted
+  link.click();
+}
