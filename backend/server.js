@@ -278,7 +278,6 @@ class RequestHandler {
         'GET:/api/chart/data': () => this.handleGetData(CSV_FILES.chart, res),
         'GET:/api/bar/data': () => this.handleGetData(CSV_FILES.bar, res),
         'GET:/api/task/data': () => this.handleGetData(CSV_FILES.task, res),
-        'GET:/api/download/pdf': () => this.handleDownloadPDF(path.join(__dirname, 'Ahmad Sidaoui CV.pdf'), res),
         'POST:/api/task/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
         'POST:/api/chart/save': () => this.handlePostCSV(req, res, CSV_FILES.chart),
         'POST:/api/bar/save': () => this.handlePostCSV(req, res, CSV_FILES.bar),
@@ -305,6 +304,8 @@ class RequestHandler {
 
 
 
+
+
   // Separate handler methods for each route
   static async handleGetData(path, res) {
     try {
@@ -317,25 +318,6 @@ class RequestHandler {
     }
   }
 
-  static async handleDownloadPDF(filePath, res) {
-    try {
-      const fileName = path.basename(filePath);
-      const fileBuffer = await fs.readFile(filePath);
-
-      res.writeHead(200, {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
-        "Content-Length": fileBuffer.length
-      });
-
-      res.end(fileBuffer);
-      console.log(`📄 PDF sent for download: ${fileName}`);
-
-    } catch (err) {
-      console.error("❌ PDF download failed:", err);
-      this.sendError(res, 500, "Failed to download PDF");
-    }
-  }
 
 
 
@@ -364,6 +346,9 @@ class RequestHandler {
       this.sendError(res, 500, `Failed to save data: ${error.message}`);
     }
   }
+
+
+
 
 
 
