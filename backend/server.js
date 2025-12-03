@@ -29,7 +29,8 @@
   const CSV_FILES = {
     data: path.join(__dirname, 'DocumentTraker.csv'),
     chart: path.join(__dirname, 'savings_data.csv'),
-    bar: path.join(__dirname, 'cost_data.csv')
+    bar: path.join(__dirname, 'cost_data.csv'),
+    task: path.join(__dirname, 'TaskManager.csv')
   };
 
   // Log the CSV file paths
@@ -276,9 +277,11 @@ class RequestHandler {
         'GET:/api/data': () => this.handleGetData(CSV_FILES.data, res),
         'GET:/api/chart/data': () => this.handleGetData(CSV_FILES.chart, res),
         'GET:/api/bar/data': () => this.handleGetData(CSV_FILES.bar, res),
-        'POST:/api/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
+        'GET:/api/task/data': () => this.handleGetData(CSV_FILES.task, res),
+        'POST:/api/task/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
         'POST:/api/chart/save': () => this.handlePostCSV(req, res, CSV_FILES.chart),
         'POST:/api/bar/save': () => this.handlePostCSV(req, res, CSV_FILES.bar),
+        'POST:/api/task/save': () => this.handlePostCSV(req, res, CSV_FILES.task),
       };
 
       const routeKey = `${method}:${pathname}`;
