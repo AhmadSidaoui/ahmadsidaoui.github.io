@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="CSS/main.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <!-- Github Markdown Styling (makes it beautiful) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
@@ -138,14 +139,28 @@
 
   <div class="hero-content" style="margin-top: 70px;">
 
-<div class="notebook-wrapper">
-  <div class="loading" id="loading">Loading notebook…</div>
 
-  <iframe
+
+  <!-- <iframe
     src="https://nbviewer.org/github/AhmadSidaoui/ahmadsidaoui.github.io/blob/main/backend/OOP%20Java/1%20OOP%20using%20Java.ipynb"
     onload="document.getElementById('loading').style.display='none'">
-  </iframe>
-</div>
+  </iframe> -->
+
+<div id="markdown-container" class="markdown-body"></div>
+
+<script>
+fetch('https://raw.githubusercontent.com/AhmadSidaoui/ahmadsidaoui.github.io/main/backend/Meta%20Database%20Engineering/test.md')
+  .then(res => res.text())
+  .then(md => {
+    document.getElementById('markdown-container').innerHTML = marked(md);
+
+    // Optional: highlight code blocks if Prism.js is included
+    document.querySelectorAll('pre code').forEach(el => {
+      Prism?.highlightElement(el);
+    });
+  })
+  .catch(err => console.error("Error loading Markdown:", err));
+</script>
 
 
 </body>
