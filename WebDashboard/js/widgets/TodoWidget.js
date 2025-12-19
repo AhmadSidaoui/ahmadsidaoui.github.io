@@ -12,7 +12,7 @@ export class TodoWidget {
 
     // Fetch tasks from server
     try {
-      const response = await  fetch(`${Config.API_BASE_URL}/task/data`);
+      const response = await  fetch(`${Config.API_BASE_URL}/api/task/data`);
       const result = await response.json();
 
       if (result.success && Array.isArray(result.data)) {
