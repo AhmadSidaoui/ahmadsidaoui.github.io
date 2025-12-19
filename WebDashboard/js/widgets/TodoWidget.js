@@ -20,6 +20,9 @@ export class TodoWidget {
           TodoWidget._addTaskToUI(list, row.Task);
         });
       }
+
+      console.log("✅ Tasks loaded from server:", result);
+
     } catch (err) {
       console.error("❌ Failed to load tasks:", err);
     }
