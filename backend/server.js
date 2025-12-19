@@ -278,7 +278,7 @@ class RequestHandler {
         'GET:/api/chart/data': () => this.handleGetData(CSV_FILES.chart, res),
         'GET:/api/bar/data': () => this.handleGetData(CSV_FILES.bar, res),
         'GET:/api/task/data': () => this.handleGetData(CSV_FILES.task, res),
-        'POST:/api/task/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
+        'POST:/api/data/save': () => this.handlePostCSV(req, res, CSV_FILES.data),
         'POST:/api/chart/save': () => this.handlePostCSV(req, res, CSV_FILES.chart),
         'POST:/api/bar/save': () => this.handlePostCSV(req, res, CSV_FILES.bar),
         'POST:/api/task/save': () => this.handlePostCSV(req, res, CSV_FILES.task),
