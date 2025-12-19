@@ -21,11 +21,14 @@ export class DashboardManager {
     import('../components/DocumentTracker.js').then(module => module.DocumentTracker.init());
     import('../components/BudgetChart.js').then(module => module.BudgetChart.init());
     
-    // import('../widgets/TodoWidget.js').then(module => {
-    //     window.TodoWidget = module.TodoWidget;
-    // });
-
-  
+    // Initialize TodoWidget
+    const todoWidgetEl = document.querySelector(".card.todo-widget");
+    if (todoWidgetEl) {
+      TodoWidget.init(todoWidgetEl);
+    } else {
+      console.warn("❌ No TodoWidget element found in DOM");
+    }
+    
   }
 
   static initializeEventListeners() {
