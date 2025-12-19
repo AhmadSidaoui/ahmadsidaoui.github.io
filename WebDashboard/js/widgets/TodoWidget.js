@@ -35,7 +35,7 @@ export class TodoWidget {
     });
   }
 
-  static _addTaskToUI(list, text) {
+  static async _addTaskToUI(list, text) {
     const li = document.createElement("li");
     li.className = "todo-item";
 
@@ -51,10 +51,27 @@ export class TodoWidget {
     const button = document.createElement("button");
     button.innerHTML = `<i class="bi bi-trash"></i>`;
     button.style = "margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;";
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       li.remove();
       // Optionally: call server DELETE here
-      fetch(`${Config.API_BASE_URL}/task/delete`);
+      const taskName = li.querySelector("span").textContent.trim();
+
+      try {
+        const response = await fetch(`${Config.API_BASE_URL}/task/delete`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: taskName })
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+        console.log(`✅ Task deleted from server: ${taskName}`);
+      } catch (err) {
+        console.error(`❌ Failed to delete task:`, err);
+      }
+
+
+
     });
 
     li.appendChild(checkbox);
