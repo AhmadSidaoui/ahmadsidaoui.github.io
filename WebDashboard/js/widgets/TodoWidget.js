@@ -38,15 +38,32 @@ export class TodoWidget {
   static _addTaskToUI(list, text) {
     const li = document.createElement("li");
     li.className = "todo-item";
-    li.innerHTML = `
-      <input type="checkbox" onchange="this.parentElement.classList.toggle('completed')">
-      <span>${text}</span>
-      <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;">
-        <i class="bi bi-trash"></i>
-      </button>
-    `;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.addEventListener("change", () => {
+      li.classList.toggle("completed");
+    });
+
+    const span = document.createElement("span");
+    span.textContent = text;
+
+    const button = document.createElement("button");
+    button.innerHTML = `<i class="bi bi-trash"></i>`;
+    button.style = "margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;";
+    button.addEventListener("click", () => {
+      li.remove();
+      // Optionally: call server DELETE here
+      fetch(`${Config.API_BASE_URL}/task/delete`);
+    });
+
+    li.appendChild(checkbox);
+    li.appendChild(span);
+    li.appendChild(button);
+
     list.appendChild(li);
   }
+
 
   static async addTodo(input) {
     const text = input.value.trim();

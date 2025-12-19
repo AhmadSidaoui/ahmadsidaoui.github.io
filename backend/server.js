@@ -282,6 +282,7 @@ class RequestHandler {
         'POST:/api/chart/save': () => this.handlePostCSV(req, res, CSV_FILES.chart),
         'POST:/api/bar/save': () => this.handlePostCSV(req, res, CSV_FILES.bar),
         'POST:/api/task/save': () => this.handlePostCSV(req, res, CSV_FILES.task),
+        'DELETE:/api/task/delete': () => this.handleDeleteTask(req, res),
       };
 
       const routeKey = `${method}:${pathname}`;
@@ -318,6 +319,32 @@ class RequestHandler {
     }
   }
 
+
+
+  static async handleDeleteTask(req, res) {
+    try {
+      const body = await this.parseRequestBody(req);
+      const { task } = body; // task name to delete
+
+      if (!task) throw new Error("Missing 'task' field to delete");
+
+      const tasks = await CSVManager.readCSV(CSV_FILES.task);
+      const filtered = tasks.filter(t => t.Task !== task);
+
+      if (filtered.length === tasks.length) {
+        return this.sendError(res, 404, "Task not found");
+      }
+
+      await CSVManager.writeCSV(CSV_FILES.task, filtered);
+      await github.commitFile(CSV_FILES.task, `Deleted task: ${task}`);
+
+      this.sendJson(res, 200, { success: true, message: `Task '${task}' deleted` });
+
+    } catch (error) {
+      console.error(`❌ Error deleting task:`, error);
+      this.sendError(res, 500, error.message);
+    }
+  }
 
 
 
