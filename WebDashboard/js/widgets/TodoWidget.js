@@ -11,13 +11,15 @@ export class TodoWidget {
     const input = widgetElement.querySelector("input[type=text]");
 
     // Fetch tasks from server
+    // Fetch tasks from server
     try {
-      const response = await  fetch(`${Config.API_BASE_URL}/task/data`);
+      const response = await fetch(`${Config.API_BASE_URL}/task/data`);
       const result = await response.json();
 
       if (result.success && Array.isArray(result.data)) {
         result.data.forEach(row => {
-          TodoWidget._addTaskToUI(list, row.Task);
+          // ⬇️ HERE is where it goes
+          TodoWidget._addTaskToUI(list, row.Task, row.Status);
         });
       }
 
@@ -27,22 +29,25 @@ export class TodoWidget {
       console.error("❌ Failed to load tasks:", err);
     }
 
-    // Hook input to addTodo
-    input.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        TodoWidget.addTodo(input);
-      }
-    });
   }
 
-  static async _addTaskToUI(list, text) {
+  static async _addTaskToUI(list, text, status = "Pending") {
     const li = document.createElement("li");
     li.className = "todo-item";
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
-    checkbox.addEventListener("change", () => {
+    checkbox.checked = status.toLowerCase() === "completed";
+
+    if (checkbox.checked) {
+      li.classList.add("completed");
+    }
+
+    checkbox.addEventListener("change", async () => {
       li.classList.toggle("completed");
+
+      // Save immediately (same idea as DocumentTracker.toggleRow)
+      await TodoWidget.saveAllTasks(list);
     });
 
     const span = document.createElement("span");
@@ -53,25 +58,7 @@ export class TodoWidget {
     button.style = "margin-left: auto; background: none; border: none; color: var(--text-secondary); cursor: pointer;";
     button.addEventListener("click", async () => {
       li.remove();
-      // Optionally: call server DELETE here
-      const taskName = li.querySelector("span").textContent.trim();
-
-      try {
-        const response = await fetch(`${Config.API_BASE_URL}/task/delete`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ task: taskName })
-        });
-
-        const result = await response.json();
-        if (!result.success) throw new Error(result.error);
-        console.log(`✅ Task deleted from server: ${taskName}`);
-      } catch (err) {
-        console.error(`❌ Failed to delete task:`, err);
-      }
-
-
-
+      await TodoWidget.saveAllTasks(list);
     });
 
     li.appendChild(checkbox);
@@ -87,30 +74,42 @@ export class TodoWidget {
     if (!text) return;
 
     const list = input.closest(".card.todo-widget").querySelector(".todo-list");
-    TodoWidget._addTaskToUI(list, text);
+    TodoWidget._addTaskToUI(list, text, "Pending");
     input.value = "";
 
-    // Save tasks to server
+    await TodoWidget.saveAllTasks(list);
+  }
+
+
+  static async saveAllTasks(list) {
     try {
-      const tasks = Array.from(list.querySelectorAll(".todo-item span")).map(span => ({
-        Task: span.textContent.trim()
+      const tasks = Array.from(list.querySelectorAll(".todo-item")).map(li => ({
+        Task: li.querySelector("span").textContent.trim(),
+        Status: li.classList.contains("completed") ? "Completed" : "Pending"
       }));
 
-      const response = await  fetch(`${Config.API_BASE_URL}/task/save`, {
+      const response = await fetch(`${Config.API_BASE_URL}/task/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: tasks })
       });
 
-      const result = await response.json();
-      if (!result.success) throw new Error(result.error);
-      console.log("✅ Task saved to server:", result);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
+      console.log("✅ Todo list saved:", tasks);
     } catch (err) {
-      console.error("❌ Failed to save task:", err);
+      console.error("❌ Failed to save tasks:", err);
     }
   }
+
+
+
+
 }
+
+
 
 // Make globally available
 window.TodoWidget = TodoWidget;
