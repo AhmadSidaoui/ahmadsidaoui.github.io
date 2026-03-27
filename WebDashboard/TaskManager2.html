@@ -1,0 +1,72 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../CSS/TaskManager.css">
+    <meta charset="UTF-8">
+    <title>Web Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/WebDashboardStyle.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="parent">
+    <div class="div1">
+            <div class="card todo-widget" style="padding: 10%; margin: 10%;">
+      <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)">
+        <i class="bi bi-x"></i>
+      </button>
+
+      <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+
+      <div class="todo-input-container">
+        <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') TodoWidget.addTodo(this)">
+        
+        <button class="todo-add-btn" onclick="TodoWidget.addTodo(this.previousElementSibling)">
+          <i class="bi bi-plus"></i>
+        </button>
+      </div>
+      
+      <ul class="todo-list"></ul>
+    </div>
+    </div>
+
+    <div class="div2">    <div class="card todo-widget" style="padding: 10%; margin: 10%;">
+      <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)">
+        <i class="bi bi-x"></i>
+      </button>
+
+      <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+
+      <div class="todo-input-container">
+        <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') TodoWidget.addTodo(this)">
+        
+        <button class="todo-add-btn" onclick="TodoWidget.addTodo(this.previousElementSibling)">
+          <i class="bi bi-plus"></i>
+        </button>
+      </div>
+      
+      <ul class="todo-list"></ul>
+    </div></div>
+    <div class="div3">    <div class="card todo-widget" style="padding: 10%; margin: 10%;">
+      <button class="delete-widget" onclick="DashboardManager.deleteWidget(this)">
+        <i class="bi bi-x"></i>
+      </button>
+
+      <h3><i class="bi bi-check2-square"></i> Todo List</h3>
+
+      <div class="todo-input-container">
+        <input type="text" class="todo-input" placeholder="Add a task..." onkeypress="if(event.key==='Enter') TodoWidget.addTodo(this)">
+        
+        <button class="todo-add-btn" onclick="TodoWidget.addTodo(this.previousElementSibling)">
+          <i class="bi bi-plus"></i>
+        </button>
+      </div>
+      
+      <ul class="todo-list"></ul>
+    </div></div>
+</div>
+</body>
+</html>
