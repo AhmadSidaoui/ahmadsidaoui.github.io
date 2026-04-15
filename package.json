@@ -2,11 +2,11 @@
   "name": "dashboard-backend",
   "version": "1.0.0",
   "description": "Dashboard with CSV backend",
-  "main": "backend/server.js",
+  "main": "backend/Server/server.js",
   "type": "module",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon server.js"
+    "start": "node backend/Server/server.js",
+    "dev": "nodemon backend/Server/server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
