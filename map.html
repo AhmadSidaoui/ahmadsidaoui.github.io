@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MapLibre City Timeline</title>
+
+  <link
+    href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    html, body, #map {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      font-family: Arial, sans-serif;
+    }
+
+    .maplibregl-ctrl-attrib {
+      font-size: 11px;
+    }
+
+    .timeline-panel {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      z-index: 10;
+      background: rgba(10, 10, 10, 0.82);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 16px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .timeline-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .timeline-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      opacity: 0.75;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .timeline-city {
+      font-size: 18px;
+      font-weight: 700;
+      color: #00e5ff;
+    }
+
+    .timeline-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #00e5ff;
+      color: #031317;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    .timeline-range {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .timeline-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: 0.7;
+      gap: 8px;
+    }
+
+    .timeline-markers span {
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 700px) {
+      .timeline-city {
+        font-size: 16px;
+      }
+
+      .timeline-markers {
+        display: none;
+      }
+
+      button {
+        padding: 9px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="timeline-panel">
+    <div class="timeline-top">
+      <div class="timeline-info">
+        <div class="timeline-date" id="timeline-date">—</div>
+        <div class="timeline-city" id="timeline-city">Loading...</div>
+      </div>
+
+      <div class="timeline-controls">
+        <button id="play-pause-btn">Pause</button>
+        <button id="show-all-btn">Show All</button>
+        <div class="status" id="timeline-status">Auto-playing</div>
+      </div>
+    </div>
+
+    <input
+      id="timeline-slider"
+      class="timeline-range"
+      type="range"
+      min="0"
+      max="0"
+      value="0"
+      step="1"
+    />
+
+    <div class="timeline-markers" id="timeline-markers"></div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script>
+    const timelineData = [
+      { date: "2023-01-15", city: "Vienna, Austria" },
+      { date: "2023-03-10", city: "Prague, Czech Republic" },
+      { date: "2023-06-02", city: "Budapest, Hungary" },
+      { date: "2023-09-18", city: "Munich, Germany" },
+      { date: "2024-01-08", city: "Milan, Italy" },
+      { date: "2024-04-22", city: "Paris, France" }
+    ];
+
+    const map = new maplibregl.Map({
+      container: "map",
+      style: {
+        version: 8,
+        sources: {
+          cartoDark: {
+            type: "raster",
+            tiles: [
+              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+              "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+              "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+              "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+            ],
+            tileSize: 256,
+            attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+          }
+        },
+        layers: [
+          {
+            id: "carto-dark-layer",
+            type: "raster",
+            source: "cartoDark"
+          }
+        ]
+      },
+      center: [16.3738, 48.2082],
+      zoom: 5
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-left");
+
+    const slider = document.getElementById("timeline-slider");
+    const cityLabel = document.getElementById("timeline-city");
+    const dateLabel = document.getElementById("timeline-date");
+    const playPauseBtn = document.getElementById("play-pause-btn");
+    const showAllBtn = document.getElementById("show-all-btn");
+    const statusLabel = document.getElementById("timeline-status");
+    const markersEl = document.getElementById("timeline-markers");
+
+    let currentIndex = 0;
+    let autoplay = true;
+    let autoplayTimer = null;
+    let requestId = 0;
+    const boundaryCache = new Map();
+
+    slider.max = Math.max(0, timelineData.length - 1);
+    renderMarkers();
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function renderMarkers() {
+      markersEl.innerHTML = "";
+      timelineData.forEach((item) => {
+        const span = document.createElement("span");
+        span.textContent = item.city.split(",")[0];
+        markersEl.appendChild(span);
+      });
+    }
+
+    async function fetchCityBoundary(cityName) {
+      if (boundaryCache.has(cityName)) {
+        return boundaryCache.get(cityName);
+      }
+
+      const url =
+        "https://nominatim.openstreetmap.org/search?" +
+        new URLSearchParams({
+          q: cityName,
+          format: "jsonv2",
+          limit: 1,
+          polygon_geojson: 1
+        });
+
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch city boundary for " + cityName);
+      }
+
+      const results = await response.json();
+
+      if (!results.length || !results[0].geojson) {
+        throw new Error("No city boundary found for " + cityName);
+      }
+
+      const feature = {
+        type: "Feature",
+        properties: {
+          name: results[0].display_name
+        },
+        geometry: results[0].geojson
+      };
+
+      boundaryCache.set(cityName, feature);
+      return feature;
+    }
+
+    function removeBoundaryLayers() {
+      if (map.getLayer("city-border")) map.removeLayer("city-border");
+      if (map.getLayer("city-glow")) map.removeLayer("city-glow");
+      if (map.getLayer("city-fill")) map.removeLayer("city-fill");
+      if (map.getSource("city-boundary")) map.removeSource("city-boundary");
+
+      if (map.getLayer("all-city-border")) map.removeLayer("all-city-border");
+      if (map.getLayer("all-city-glow")) map.removeLayer("all-city-glow");
+      if (map.getLayer("all-city-fill")) map.removeLayer("all-city-fill");
+      if (map.getSource("all-city-boundaries")) map.removeSource("all-city-boundaries");
+    }
+
+    function extendBoundsRecursive(bounds, coords) {
+      if (typeof coords[0] === "number" && typeof coords[1] === "number") {
+        bounds.extend(coords);
+        return;
+      }
+      for (const c of coords) {
+        extendBoundsRecursive(bounds, c);
+      }
+    }
+
+    function drawBoundary(feature) {
+      removeBoundaryLayers();
+
+      map.addSource("city-boundary", {
+        type: "geojson",
+        data: feature
+      });
+
+      map.addLayer({
+        id: "city-fill",
+        type: "fill",
+        source: "city-boundary",
+        paint: {
+          "fill-color": "#00e5ff",
+          "fill-opacity": 0.08
+        }
+      });
+
+      map.addLayer({
+        id: "city-glow",
+        type: "line",
+        source: "city-boundary",
+        paint: {
+          "line-color": "#00e5ff",
+          "line-width": 8,
+          "line-opacity": 0.18
+        }
+      });
+
+      map.addLayer({
+        id: "city-border",
+        type: "line",
+        source: "city-boundary",
+        paint: {
+          "line-color": "#00e5ff",
+          "line-width": 3,
+          "line-opacity": 1
+        }
+      });
+
+      const bounds = new maplibregl.LngLatBounds();
+      extendBoundsRecursive(bounds, feature.geometry.coordinates);
+
+      map.fitBounds(bounds, {
+        padding: 40,
+        duration: 1400
+      });
+    }
+
+    function drawAllBoundaries(features) {
+      removeBoundaryLayers();
+
+      const collection = {
+        type: "FeatureCollection",
+        features
+      };
+
+      map.addSource("all-city-boundaries", {
+        type: "geojson",
+        data: collection
+      });
+
+      map.addLayer({
+        id: "all-city-fill",
+        type: "fill",
+        source: "all-city-boundaries",
+        paint: {
+          "fill-color": "#00e5ff",
+          "fill-opacity": 0.05
+        }
+      });
+
+      map.addLayer({
+        id: "all-city-glow",
+        type: "line",
+        source: "all-city-boundaries",
+        paint: {
+          "line-color": "#00e5ff",
+          "line-width": 7,
+          "line-opacity": 0.16
+        }
+      });
+
+      map.addLayer({
+        id: "all-city-border",
+        type: "line",
+        source: "all-city-boundaries",
+        paint: {
+          "line-color": "#00e5ff",
+          "line-width": 2.5,
+          "line-opacity": 1
+        }
+      });
+
+      const bounds = new maplibregl.LngLatBounds();
+      for (const feature of features) {
+        extendBoundsRecursive(bounds, feature.geometry.coordinates);
+      }
+
+      map.fitBounds(bounds, {
+        padding: 60,
+        duration: 1600
+      });
+    }
+
+    async function showTimelineItem(index) {
+      const item = timelineData[index];
+      if (!item) return;
+
+      currentIndex = index;
+      slider.value = index;
+      cityLabel.textContent = item.city;
+      dateLabel.textContent = formatDate(item.date);
+      statusLabel.textContent = autoplay ? "Auto-playing" : "Paused";
+
+      const myRequest = ++requestId;
+
+      try {
+        const feature = await fetchCityBoundary(item.city);
+
+        if (myRequest !== requestId) return;
+
+        drawBoundary(feature);
+      } catch (err) {
+        console.error(err);
+        cityLabel.textContent = item.city + " (boundary unavailable)";
+      }
+    }
+
+    async function showAllCities() {
+      stopAutoplay();
+      const myRequest = ++requestId;
+
+      cityLabel.textContent = "All cities";
+      dateLabel.textContent = "Timeline overview";
+      statusLabel.textContent = "Showing all cities";
+
+      try {
+        const features = await Promise.all(
+          timelineData.map(item => fetchCityBoundary(item.city))
+        );
+
+        if (myRequest !== requestId) return;
+
+        drawAllBoundaries(features);
+      } catch (err) {
+        console.error(err);
+        cityLabel.textContent = "Some city boundaries could not be loaded";
+      }
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplay = true;
+      playPauseBtn.textContent = "Pause";
+      statusLabel.textContent = "Auto-playing";
+
+      autoplayTimer = setInterval(() => {
+        const nextIndex = (currentIndex + 1) % timelineData.length;
+        showTimelineItem(nextIndex);
+      }, 3000);
+    }
+
+    function stopAutoplay() {
+      autoplay = false;
+      playPauseBtn.textContent = "Play";
+      statusLabel.textContent = "Paused";
+
+      if (autoplayTimer) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+      }
+    }
+
+    function toggleAutoplay() {
+      if (autoplayTimer) {
+        stopAutoplay();
+      } else {
+        startAutoplay();
+      }
+    }
+
+    slider.addEventListener("input", () => {
+      const index = Number(slider.value);
+      stopAutoplay();
+      showTimelineItem(index);
+    });
+
+    slider.addEventListener("pointerdown", () => {
+      stopAutoplay();
+    });
+
+    playPauseBtn.addEventListener("click", toggleAutoplay);
+    showAllBtn.addEventListener("click", showAllCities);
+
+    map.on("load", async () => {
+      await showTimelineItem(0);
+      startAutoplay();
+    });
+  </script>
+</body>
+</html>
