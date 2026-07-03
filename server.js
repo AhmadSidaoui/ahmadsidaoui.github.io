@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createReadStream, existsSync } from 'node:fs';
+import { createReadStream, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,7 +25,8 @@ function resolvePath(urlPath) {
   const requested = normalize(decodeURIComponent(pathname)).replace(/^[/\\]+/, '').replace(/^(\.\.[/\\])+/, '');
   const filePath = join(distDir, requested === '' ? 'index.html' : requested);
 
-  if (existsSync(filePath)) return filePath;
+  if (existsSync(filePath) && statSync(filePath).isFile()) return filePath;
+  if (extname(requested)) return '';
   return join(distDir, 'index.html');
 }
 
@@ -33,14 +34,23 @@ createServer((req, res) => {
   const filePath = resolvePath(req.url || '/');
   const ext = extname(filePath);
 
-  res.writeHead(200, {
-    'Content-Type': contentTypes[ext] || 'application/octet-stream'
-  });
+  if (!filePath || !existsSync(filePath) || !statSync(filePath).isFile()) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
 
   createReadStream(filePath)
     .on('error', () => {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('Not found');
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+      }
+      res.end('Server error');
+    })
+    .on('open', () => {
+      res.writeHead(200, {
+        'Content-Type': contentTypes[ext] || 'application/octet-stream'
+      });
     })
     .pipe(res);
 }).listen(port, '0.0.0.0', () => {
