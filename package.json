@@ -1,20 +1,19 @@
 {
-  "name": "dashboard-backend",
-  "version": "1.0.0",
-  "description": "Dashboard with CSV backend",
-  "main": "backend/Server/server.js",
+  "name": "ahmad-sidaoui-portfolio",
+  "version": "2.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "start": "node backend/Server/server.js",
-    "dev": "nodemon backend/Server/server.js"
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "@octokit/rest": "^19.0.7",
-    "dotenv": "^16.3.1"
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.468.0"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
+  "devDependencies": {}
 }
